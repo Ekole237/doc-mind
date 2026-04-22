@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react"
+import { useNavigate } from "react-router-dom"
 import type { AxiosError } from "axios"
 import apiClient, { chat } from "../../api/client"
 import type { ApiError, ChatMessage, ChatResponse, ChatSession } from "../../types"
@@ -14,9 +15,10 @@ function getFeedbackErrorMessage(err: unknown): string {
   return "Erreur lors de l'envoi du feedback."
 }
 
-export function useChat() {
+export function useChat(id?: string) {
+  const navigate = useNavigate()
   const [messages, setMessages] = useState<ChatMessage[]>([])
-  const [sessionId, setSessionId] = useState<string | null>(null)
+  const [sessionId, setSessionId] = useState<string | null>(id || null)
   const [sessions, setSessions] = useState<ChatSession[]>([])
   const [inputValue, setInputValue] = useState("")
   const [inputError, setInputError] = useState<string | null>(null)
@@ -29,6 +31,16 @@ export function useChat() {
 
   const scrollRef = useRef<HTMLDivElement>(null)
   const lastQuestionRef = useRef<string>("")
+
+  // Handle URL change
+  useEffect(() => {
+    if (id && id !== sessionId) {
+      loadSession(id)
+    } else if (!id && sessionId) {
+      setSessionId(null)
+      setMessages([])
+    }
+  }, [id])
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -57,6 +69,7 @@ export function useChat() {
       setSessionId(id)
     } catch (error) {
       console.error("Erreur lors du chargement de la session", error)
+      navigate("/chat")
     } finally {
       setIsLoading(false)
     }
@@ -65,6 +78,7 @@ export function useChat() {
   const clearSession = () => {
     setMessages([])
     setSessionId(null)
+    navigate("/chat")
   }
 
   const executeQuery = async (question: string) => {
@@ -80,6 +94,7 @@ export function useChat() {
       if (!sessionId && data.context_id) {
         setSessionId(data.context_id)
         fetchSessions()
+        navigate(`/chat/${data.context_id}`, { replace: true })
       }
 
       const assistantMsg: ChatMessage = {

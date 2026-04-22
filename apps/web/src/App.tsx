@@ -36,6 +36,14 @@ export function App() {
             }
           />
           <Route
+            path="/chat/:id"
+            element={
+              <ProtectedRoute allowedRoles={["employee", "guest", "admin"]}>
+                <ChatPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/history"
             element={
               <ProtectedRoute allowedRoles={["employee", "guest", "admin"]}>

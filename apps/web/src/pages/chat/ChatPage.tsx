@@ -2,7 +2,7 @@ import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
 import { Bot, FileText, History, LogOut, Menu, Search, Send, Sparkles, X, PlusCircle } from "lucide-react"
 import { useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import { FeedbackModal } from "../../components/chat/FeedbackModal"
 import { MessageBubble } from "../../components/chat/MessageBubble"
 import { SourceCitation } from "../../components/chat/SourceCitation"
@@ -154,6 +154,7 @@ function ChatHeader({ onMenuClick }: { onMenuClick: () => void }) {
 export function ChatPage() {
   const { logout } = useAuth()
   const navigate = useNavigate()
+  const { id } = useParams()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   
   const {
@@ -172,11 +173,10 @@ export function ChatPage() {
     retryLastMessage,
     handleFeedback,
     clearSession,
-    loadSession,
     sessions,
     sessionId,
     MAX_LENGTH,
-  } = useChat()
+  } = useChat(id)
 
   return (
     <div className="flex h-screen bg-background font-sans text-foreground selection:bg-primary/20">
@@ -188,7 +188,7 @@ export function ChatPage() {
         onNewChat={clearSession}
         sessions={sessions}
         currentSessionId={sessionId}
-        onSessionClick={loadSession}
+        onSessionClick={(sessionId) => navigate(`/chat/${sessionId}`)}
       />
 
       <main className="flex flex-1 flex-col overflow-hidden relative">
