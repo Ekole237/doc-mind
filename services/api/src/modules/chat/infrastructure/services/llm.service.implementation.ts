@@ -1,4 +1,5 @@
 import {
+  type ChatMessage,
   type CompleteResponse,
   type LlmService,
 } from '#chat/domain/services/llm.service';
@@ -24,6 +25,7 @@ export class LlmServiceImplementation implements LlmService {
   async complete(
     chunks: DocumentChunk[],
     question: string,
+    history?: ChatMessage[],
   ): Promise<CompleteResponse> {
     const provider = this._configService.get<string>('LLM_PROVIDER', 'openai');
     const userPrompt = this._promptBuilder.buildUserPrompt(chunks, question);
@@ -31,29 +33,99 @@ export class LlmServiceImplementation implements LlmService {
 
     let responseText = '';
     if (provider === 'anthropic') {
-      responseText = await this._callAnthropic(systemPrompt, userPrompt);
+      responseText = await this._callAnthropic(
+        systemPrompt,
+        userPrompt,
+        history,
+      );
     } else if (provider === 'groq') {
-      responseText = await this._callGroq(systemPrompt, userPrompt, true);
+      responseText = await this._callGroq(
+        systemPrompt,
+        userPrompt,
+        false,
+        history,
+      );
     } else {
-      responseText = await this._callOpenAi(systemPrompt, userPrompt, true);
+      responseText = await this._callOpenAi(
+        systemPrompt,
+        userPrompt,
+        false,
+        history,
+      );
     }
 
     return this._parseJsonResponse(responseText);
   }
 
-  async completeConversational(message: string): Promise<string> {
+  async classifyIntent(message: string): Promise<'SEARCH' | 'CHAT'> {
+    const provider = this._configService.get<string>('LLM_PROVIDER', 'openai');
+    const systemPrompt = this._promptBuilder.INTENT_SYSTEM_PROMPT;
+
+    let responseText = '';
+    try {
+      if (provider === 'anthropic') {
+        responseText = await this._callAnthropic(systemPrompt, message);
+      } else if (provider === 'groq') {
+        responseText = await this._callGroq(systemPrompt, message);
+      } else {
+        responseText = await this._callOpenAi(systemPrompt, message);
+      }
+
+      const normalized = responseText.trim().toUpperCase();
+      return normalized.includes('SEARCH') ? 'SEARCH' : 'CHAT';
+    } catch (error) {
+      this._logger.error(`Error classifying intent: ${error.message}`);
+      return 'SEARCH'; // Default to search on error for safety
+    }
+  }
+
+  async condenseQuestion(
+    history: ChatMessage[],
+    question: string,
+  ): Promise<string> {
+    if (history.length === 0) return question;
+
+    const provider = this._configService.get<string>('LLM_PROVIDER', 'openai');
+    const historyText = history
+      .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
+      .join('\n');
+
+    const systemPrompt = 'Tu es un assistant qui reformule des questions.';
+    const userPrompt = this._promptBuilder.CONDENSE_QUESTION_PROMPT.replace(
+      '{history}',
+      historyText,
+    ).replace('{question}', question);
+
+    try {
+      if (provider === 'anthropic') {
+        return await this._callAnthropic(systemPrompt, userPrompt);
+      } else if (provider === 'groq') {
+        return await this._callGroq(systemPrompt, userPrompt);
+      } else {
+        return await this._callOpenAi(systemPrompt, userPrompt);
+      }
+    } catch (error) {
+      this._logger.error(`Error condensing question: ${error.message}`);
+      return question;
+    }
+  }
+
+  async completeConversational(
+    message: string,
+    history?: ChatMessage[],
+  ): Promise<string> {
     const provider = this._configService.get<string>('LLM_PROVIDER', 'openai');
     const systemPrompt = this._promptBuilder.CONVERSATIONAL_SYSTEM_PROMPT;
 
     if (provider === 'anthropic') {
-      return this._callAnthropic(systemPrompt, message);
+      return this._callAnthropic(systemPrompt, message, history);
     }
 
     if (provider === 'groq') {
-      return this._callGroq(systemPrompt, message);
+      return this._callGroq(systemPrompt, message, false, history);
     }
 
-    return this._callOpenAi(systemPrompt, message);
+    return this._callOpenAi(systemPrompt, message, false, history);
   }
 
   private _parseJsonResponse(text: string): CompleteResponse {
@@ -142,16 +214,24 @@ export class LlmServiceImplementation implements LlmService {
   private async _callAnthropic(
     systemPrompt: string,
     userPrompt: string,
+    history: ChatMessage[] = [],
   ): Promise<string> {
     const client = new Anthropic({
       apiKey: this._configService.get<string>('ANTHROPIC_API_KEY'),
     });
 
+    const messages: Anthropic.MessageParam[] = history.map((m) => ({
+      role: m.role === 'assistant' ? 'assistant' : 'user',
+      content: m.content,
+    }));
+
+    messages.push({ role: 'user', content: userPrompt });
+
     const msg = await client.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 1000,
       system: systemPrompt,
-      messages: [{ role: 'user', content: userPrompt }],
+      messages,
     });
 
     return (msg.content[0] as Anthropic.TextBlock).text;
@@ -161,18 +241,28 @@ export class LlmServiceImplementation implements LlmService {
     systemPrompt: string,
     userPrompt: string,
     jsonMode = false,
+    history: ChatMessage[] = [],
   ): Promise<string> {
     const client = new OpenAI({
       apiKey: this._configService.get<string>('OPENAI_API_KEY'),
     });
 
+    const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
+      { role: 'system', content: systemPrompt },
+      ...history.map(
+        (m) =>
+          ({
+            role: m.role,
+            content: m.content,
+          }) as OpenAI.Chat.ChatCompletionMessageParam,
+      ),
+      { role: 'user', content: userPrompt },
+    ];
+
     const completion = await client.chat.completions.create({
       model: 'gpt-4o',
       response_format: jsonMode ? { type: 'json_object' } : undefined,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
+      messages,
     });
 
     return completion.choices[0].message.content ?? '';
@@ -182,11 +272,24 @@ export class LlmServiceImplementation implements LlmService {
     systemPrompt: string,
     userPrompt: string,
     jsonMode = false,
+    history: ChatMessage[] = [],
   ): Promise<string> {
     const client = new OpenAI({
       apiKey: this._configService.get<string>('GROQ_API_KEY'),
       baseURL: 'https://api.groq.com/openai/v1',
     });
+
+    const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
+      { role: 'system', content: systemPrompt },
+      ...history.map(
+        (m) =>
+          ({
+            role: m.role,
+            content: m.content,
+          }) as OpenAI.Chat.ChatCompletionMessageParam,
+      ),
+      { role: 'user', content: userPrompt },
+    ];
 
     const completion = await client.chat.completions.create({
       model: this._configService.get<string>(
@@ -194,10 +297,7 @@ export class LlmServiceImplementation implements LlmService {
         'llama-3.3-70b-versatile',
       ),
       response_format: jsonMode ? { type: 'json_object' } : undefined,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
+      messages,
       max_tokens: 1000,
     });
 
