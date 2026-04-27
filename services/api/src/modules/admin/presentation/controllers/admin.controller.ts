@@ -14,7 +14,7 @@ import { ListAllDocumentsUseCase } from '#admin/application/use-cases/list-all-d
 import { ListFeedbacksUseCase } from '#admin/application/use-cases/list-feelbacks.use-case';
 import { ListGuestTokensUseCase } from '#admin/application/use-cases/list-guest-tokens.use-case';
 import { ListQueryLogsUseCase } from '#admin/application/use-cases/list-query.use-case';
-import { GetSessionLogsUseCase } from '#admin/application/use-cases/get-session-logs.use-case';
+import { AdminGetSessionLogsUseCase } from '#admin/application/use-cases/admin-get-session-logs.use-case';
 import { ReindexAllUseCase } from '#admin/application/use-cases/reindex-all.use-case';
 import { ResolveFeedbackUseCase } from '#admin/application/use-cases/resolve-feedback.use-case';
 import { RevokeGuestTokenUseCase } from '#admin/application/use-cases/revoke-guest-token.use-case';
@@ -59,7 +59,7 @@ export class AdminController {
     private readonly _listFeedbacksUseCase: ListFeedbacksUseCase,
     private readonly _resolveFeedbackUseCase: ResolveFeedbackUseCase,
     private readonly _listQueryLogsUseCase: ListQueryLogsUseCase,
-    private readonly _getSessionLogsUseCase: GetSessionLogsUseCase,
+    private readonly _adminGetSessionLogsUseCase: AdminGetSessionLogsUseCase,
     private readonly _reindexAllUseCase: ReindexAllUseCase,
     private readonly _listGuestTokensUseCase: ListGuestTokensUseCase,
     private readonly _createGuestTokenUseCase: CreateGuestTokenUseCase,
@@ -202,7 +202,7 @@ export class AdminController {
 
   @Get('logs/session/:id')
   async getSessionLogs(@Param('id') id: string) {
-    return await this._getSessionLogsUseCase.execute(id);
+    return await this._adminGetSessionLogsUseCase.execute(id);
   }
 
   @Post('reindex')

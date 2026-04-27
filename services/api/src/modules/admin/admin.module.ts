@@ -11,7 +11,7 @@ import { ListAllDocumentsUseCase } from '#admin/application/use-cases/list-all-d
 import { ListFeedbacksUseCase } from '#admin/application/use-cases/list-feelbacks.use-case';
 import { ListGuestTokensUseCase } from '#admin/application/use-cases/list-guest-tokens.use-case';
 import { ListQueryLogsUseCase } from '#admin/application/use-cases/list-query.use-case';
-import { GetSessionLogsUseCase } from '#admin/application/use-cases/get-session-logs.use-case';
+import { AdminGetSessionLogsUseCase } from '#admin/application/use-cases/admin-get-session-logs.use-case';
 import { ReindexAllUseCase } from '#admin/application/use-cases/reindex-all.use-case';
 import { ResolveFeedbackUseCase } from '#admin/application/use-cases/resolve-feedback.use-case';
 import { RevokeGuestTokenUseCase } from '#admin/application/use-cases/revoke-guest-token.use-case';
@@ -38,9 +38,10 @@ import { MailModule } from '../../core/mail/mail.module';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { QdrantModule } from '../../qdrant/qdrant.module';
 import { AuthModule } from '../auth/auth.module';
+import { ChatModule } from '../chat/chat.module';
 
 @Module({
-  imports: [PrismaModule, QdrantModule, MailModule, AuthModule],
+  imports: [PrismaModule, QdrantModule, MailModule, AuthModule, ChatModule],
   controllers: [AdminController],
   providers: [
     // Use cases — Documents
@@ -58,7 +59,7 @@ import { AuthModule } from '../auth/auth.module';
     ResolveFeedbackUseCase,
     // Use cases — Logs
     ListQueryLogsUseCase,
-    GetSessionLogsUseCase,
+    AdminGetSessionLogsUseCase,
     // Use cases — Guests
     ListGuestTokensUseCase,
     CreateGuestTokenUseCase,

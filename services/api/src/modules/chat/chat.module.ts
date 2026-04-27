@@ -54,5 +54,6 @@ import { QdrantModule } from '../../qdrant/qdrant.module';
       useClass: ChatSessionRepositoryImplementation,
     },
   ],
+  exports: [QUERY_LOG_REPOSITORY, CHAT_SESSION_REPOSITORY],
 })
 export class ChatModule {}

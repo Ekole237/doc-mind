@@ -5,7 +5,7 @@ import {
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 
 @Injectable()
-export class GetSessionLogsUseCase {
+export class AdminGetSessionLogsUseCase {
   constructor(
     @Inject(QUERY_LOG_REPOSITORY)
     private readonly _queryLogRepository: QueryLogRepository,
