@@ -4,7 +4,7 @@ interface MetricCardProps {
   label: string
   value: number
   description?: string
-  variant?: "default" | "warning" | "danger"
+  variant?: "default" | "warning" | "danger" | "info"
 }
 
 export function MetricCard({ label, value, description, variant = "default" }: MetricCardProps) {
@@ -12,8 +12,10 @@ export function MetricCard({ label, value, description, variant = "default" }: M
     variant === "danger" && value > 0
       ? "text-destructive"
       : variant === "warning" && value > 0
-        ? "text-[var(--warning-bg)]"
-        : "text-foreground"
+        ? "text-orange-500"
+        : variant === "info"
+          ? "text-blue-500"
+          : "text-foreground"
 
   return (
     <Card>

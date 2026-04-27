@@ -1,7 +1,8 @@
 import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
-import { useState } from "react"
+import { X } from "lucide-react"
+import { useState, useEffect } from "react"
 import { admin } from "../../api/client"
 import { AdminLayout } from "../../components/layout/AdminLayout"
 import type { AdminQueryLog, ApiError } from "../../types"
@@ -13,18 +14,83 @@ function getApiMessage(err: unknown, fallback: string): string {
   return e.response?.data?.message ?? fallback
 }
 
+interface ConversationModalProps {
+  sessionId: string
+  onClose: () => void
+}
+
+function ConversationModal({ sessionId, onClose }: ConversationModalProps) {
+  const [logs, setLogs] = useState<AdminQueryLog[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+
+  useEffect(() => {
+    admin
+      .getSessionLogs(sessionId)
+      .then(setLogs)
+      .catch(() => setError("Impossible de charger l'historique"))
+      .finally(() => setLoading(false))
+  }, [sessionId])
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="flex h-full max-h-[80vh] w-full max-w-2xl flex-col rounded-lg border border-border bg-card shadow-xl">
+        <div className="flex items-center justify-between border-b border-border/50 p-4">
+          <h2 className="font-semibold">Historique de la conversation</h2>
+          <button onClick={onClose} className="rounded-full p-1 hover:bg-muted">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {loading && (
+            <div className="flex h-32 items-center justify-center">
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            </div>
+          )}
+          
+          {error && <div className="text-center text-destructive">{error}</div>}
+          
+          {!loading && !error && logs.map((log) => (
+            <div key={log._id} className="space-y-3">
+              <div className="flex flex-col items-end">
+                <div className="max-w-[85%] rounded-2xl bg-primary px-4 py-2 text-sm text-primary-foreground">
+                  {log._question}
+                </div>
+                <span className="mt-1 text-[10px] text-muted-foreground">Utilisateur</span>
+              </div>
+              
+              <div className="flex flex-col items-start">
+                <div className="max-w-[85%] rounded-2xl bg-muted px-4 py-2 text-sm">
+                  {log._answer}
+                  {log._isIgnorance && (
+                    <div className="mt-2 text-[10px] italic text-destructive">Signalé comme sans réponse</div>
+                  )}
+                </div>
+                <span className="mt-1 text-[10px] text-muted-foreground">Assistant</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function LogsPage() {
   const [logs, setLogs] = useState<AdminQueryLog[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [page, setPage] = useState(1)
   const [hasSearched, setHasSearched] = useState(false)
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null)
 
   // Filters (staged — applied on button click)
   const [from, setFrom] = useState("")
   const [to, setTo] = useState("")
   const [role, setRole] = useState("")
   const [flagged, setFlagged] = useState(false)
+  const [ignorance, setIgnorance] = useState(false)
 
   const fetchLogs = (p: number) => {
     setIsLoading(true)
@@ -35,6 +101,7 @@ export function LogsPage() {
         to: to || undefined,
         role: role || undefined,
         flagged: flagged || undefined,
+        ignorance: ignorance || undefined,
         page: p,
         limit: LIMIT,
       })
@@ -50,7 +117,7 @@ export function LogsPage() {
   const handleApply = () => fetchLogs(1)
 
   const handleReset = () => {
-    setFrom(""); setTo(""); setRole(""); setFlagged(false)
+    setFrom(""); setTo(""); setRole(""); setFlagged(false); setIgnorance(false)
     setPage(1); setLogs([]); setHasSearched(false)
   }
 
@@ -88,15 +155,26 @@ export function LogsPage() {
               </select>
             </div>
             <div className="flex flex-col justify-end gap-2">
-              <label className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={flagged}
-                  onChange={(e) => setFlagged(e.target.checked)}
-                  className="h-4 w-4"
-                />
-                Signalés uniquement
-              </label>
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={flagged}
+                    onChange={(e) => setFlagged(e.target.checked)}
+                    className="h-4 w-4"
+                  />
+                  Signalés uniquement
+                </label>
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={ignorance}
+                    onChange={(e) => setIgnorance(e.target.checked)}
+                    className="h-4 w-4"
+                  />
+                  Sans réponse uniquement
+                </label>
+              </div>
               <div className="flex gap-2">
                 <Button onClick={handleApply} disabled={isLoading} className="flex-1">
                   Appliquer
@@ -144,7 +222,11 @@ export function LogsPage() {
                 </thead>
                 <tbody>
                   {logs.map((log) => (
-                    <tr key={log._id} className="border-b border-border hover:bg-muted/50">
+                    <tr 
+                      key={log._id} 
+                      className="border-b border-border hover:bg-muted/50 cursor-pointer"
+                      onClick={() => log._chatSessionId && setSelectedSessionId(log._chatSessionId)}
+                    >
                       <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
                         <div>{new Date(log._timestamp).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" })}</div>
                         <div className="text-[11px] opacity-70">{new Date(log._timestamp).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}</div>
@@ -172,7 +254,11 @@ export function LogsPage() {
             {/* Mobile cards */}
             <div className="md:hidden space-y-3">
               {logs.map((log) => (
-                <div key={log._id} className="rounded-lg border border-border bg-card p-4 space-y-2">
+                <div 
+                  key={log._id} 
+                  className="rounded-lg border border-border bg-card p-4 space-y-2 cursor-pointer active:bg-muted/50"
+                  onClick={() => log._chatSessionId && setSelectedSessionId(log._chatSessionId)}
+                >
                   <div className="flex items-start justify-between gap-2">
                     <div className="text-xs text-muted-foreground">
                       <span className="font-medium text-foreground">
@@ -207,6 +293,13 @@ export function LogsPage() {
               </Button>
             </div>
           </>
+        )}
+
+        {selectedSessionId && (
+          <ConversationModal 
+            sessionId={selectedSessionId} 
+            onClose={() => setSelectedSessionId(null)} 
+          />
         )}
       </div>
     </AdminLayout>

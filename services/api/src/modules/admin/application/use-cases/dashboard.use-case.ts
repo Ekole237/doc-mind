@@ -1,5 +1,9 @@
 import { DocumentStatus } from '#admin/domain/enums/document-status';
 import {
+  ADMIN_METRICS_REPOSITORY,
+  type AdminMetricsRepository,
+} from '#admin/domain/repositories/admin-metrics.repository';
+import {
   DOCUMENT_REPOSITORY,
   type DocumentRepository,
 } from '#admin/domain/repositories/document.repository';
@@ -23,10 +27,18 @@ export class DashboardUseCase {
     private readonly _feedbackRepository: FeedbackRepository,
     @Inject(QUERY_LOGS_REPOSITORY)
     private readonly _queryLogsRepository: QueryLogsRepository,
+    @Inject(ADMIN_METRICS_REPOSITORY)
+    private readonly _adminMetricsRepository: AdminMetricsRepository,
   ) {}
 
   async execute() {
-    const dashboardMetrics = await Promise.all([
+    const [
+      docsIndexed,
+      docsPending,
+      feedbacksPending,
+      queriesCount,
+      usageMetrics,
+    ] = await Promise.all([
       this._documentRepository.countByStatus(DocumentStatus.INDEXED),
       this._documentRepository.countByStatus(DocumentStatus.PENDING),
       this._feedbackRepository.countByStatus(FeedbackStatus.PENDING),
@@ -36,13 +48,15 @@ export class DashboardUseCase {
         page: 1,
         limit: 10,
       }),
+      this._adminMetricsRepository.getUsageMetrics(),
     ]);
 
     return {
-      documentsIndexed: dashboardMetrics[0],
-      documentsPending: dashboardMetrics[1],
-      feedbacksPending: dashboardMetrics[2],
-      queriesThisMonth: dashboardMetrics[3],
+      documentsIndexed: docsIndexed,
+      documentsPending: docsPending,
+      feedbacksPending: feedbacksPending,
+      queriesThisMonth: queriesCount,
+      ...usageMetrics,
     };
   }
 }

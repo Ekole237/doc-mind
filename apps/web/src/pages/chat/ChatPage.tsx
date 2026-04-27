@@ -1,7 +1,7 @@
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
-import { Bot, FileText, History, LogOut, Menu, Search, Send, Sparkles, X, PlusCircle } from "lucide-react"
-import { useState } from "react"
+import { Bot, FileText, History, LogOut, Menu, Search, Send, Sparkles, X, PlusCircle, ShieldCheck, Zap, BookOpen, MessageCircle, User, LayoutDashboard } from "lucide-react"
+import { useState, useMemo } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { FeedbackModal } from "../../components/chat/FeedbackModal"
 import { MessageBubble } from "../../components/chat/MessageBubble"
@@ -13,11 +13,34 @@ import { MessageSquare } from "lucide-react"
 
 // --- PRESENTATIONAL COMPONENTS ---
 
-const SUGGESTED_QUESTIONS = [
-  { text: "Quelle est la politique de télétravail ?", icon: <Bot className="h-4 w-4" /> },
-  { text: "Détails de l'assurance médicale ?", icon: <Sparkles className="h-4 w-4" /> },
-  { text: "Convention collective applicable ?", icon: <FileText className="h-4 w-4" /> },
-  { text: "Procédure de demande de congé ?", icon: <Search className="h-4 w-4" /> },
+const EXPERTISE_CATEGORIES = [
+  {
+    title: "RH & Carrière",
+    icon: <User className="h-4 w-4 text-blue-500" />,
+    questions: [
+      "Quelle est la politique de télétravail ?",
+      "Comment fonctionne l'évaluation annuelle ?",
+      "Quelles sont les opportunités de formation ?"
+    ]
+  },
+  {
+    title: "Santé & Assurances",
+    icon: <ShieldCheck className="h-4 w-4 text-green-500" />,
+    questions: [
+      "Détails de l'assurance médicale ?",
+      "Comment demander un remboursement santé ?",
+      "Couverture pour les soins dentaires ?"
+    ]
+  },
+  {
+    title: "Procédures Internes",
+    icon: <BookOpen className="h-4 w-4 text-purple-500" />,
+    questions: [
+      "Procédure de demande de congé ?",
+      "Comment déclarer ses notes de frais ?",
+      "Convention collective applicable ?"
+    ]
+  }
 ]
 
 function ChatSidebar({
@@ -26,18 +49,22 @@ function ChatSidebar({
   onHistoryClick,
   onLogout,
   onNewChat,
+  onDashboardClick,
   sessions,
   currentSessionId,
   onSessionClick,
+  isAdmin,
 }: {
   isOpen: boolean
   onClose: () => void
   onHistoryClick: () => void
   onLogout: () => void
   onNewChat: () => void
+  onDashboardClick: () => void
   sessions: ChatSession[]
   currentSessionId: string | null
   onSessionClick: (id: string) => void
+  isAdmin: boolean
 }) {
   return (
     <>
@@ -109,7 +136,17 @@ function ChatSidebar({
           </div>
         </nav>
 
-        <div className="border-t border-border/50 p-4">
+        <div className="border-t border-border/50 p-4 space-y-1">
+          {isAdmin && (
+            <Button
+              variant="ghost"
+              className="w-full justify-start gap-3 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+              onClick={onDashboardClick}
+            >
+              <LayoutDashboard className="h-4 w-4" />
+              Panneau d'administration
+            </Button>
+          )}
           <Button
             variant="ghost"
             className="w-full justify-start gap-3 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
@@ -152,7 +189,7 @@ function ChatHeader({ onMenuClick }: { onMenuClick: () => void }) {
 // --- MAIN CONTAINER ---
 
 export function ChatPage() {
-  const { logout } = useAuth()
+  const { logout, user } = useAuth()
   const navigate = useNavigate()
   const { id } = useParams()
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -178,6 +215,14 @@ export function ChatPage() {
     MAX_LENGTH,
   } = useChat(id)
 
+  const firstName = useMemo(() => {
+    if (!user?.email) return ""
+    const namePart = user.email.split("@")[0]
+    const dotIndex = namePart.indexOf(".")
+    const firstPart = dotIndex !== -1 ? namePart.split(".")[0] : namePart
+    return firstPart.charAt(0).toUpperCase() + firstPart.slice(1)
+  }, [user])
+
   return (
     <div className="flex h-screen bg-background font-sans text-foreground selection:bg-primary/20">
       <ChatSidebar
@@ -186,9 +231,11 @@ export function ChatPage() {
         onHistoryClick={() => navigate("/history")}
         onLogout={logout}
         onNewChat={clearSession}
+        onDashboardClick={() => navigate("/admin/dashboard")}
         sessions={sessions}
         currentSessionId={sessionId}
         onSessionClick={(sessionId) => navigate(`/chat/${sessionId}`)}
+        isAdmin={user?.role === "admin"}
       />
 
       <main className="flex flex-1 flex-col overflow-hidden relative">
@@ -198,32 +245,66 @@ export function ChatPage() {
         <div className="flex-1 overflow-y-auto scroll-smooth" ref={scrollRef}>
           <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-4 pb-32 sm:p-6 sm:pb-36">
             {messages.length === 0 && !isLoading && (
-              <div className="flex h-[70vh] flex-col items-center justify-center space-y-8 text-center opacity-0 animate-in fade-in duration-700">
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/20 shadow-inner">
-                  <Bot className="h-8 w-8" />
-                </div>
-                
-                <div className="max-w-sm space-y-2">
-                  <h3 className="title-lg">Bonjour !</h3>
-                  <p className="text-body text-muted-foreground">
-                    Je suis votre assistant de recherche documentaire. 
-                    Posez vos questions sur nos politiques internes, assurances et procédures.
+              <div className="flex flex-col space-y-12 py-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+                {/* Hero section */}
+                <div className="text-center space-y-4">
+                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/20 shadow-inner">
+                    <Bot className="h-8 w-8" />
+                  </div>
+                  <h1 className="title-lg tracking-tight">
+                    Bonjour{firstName ? `, ${firstName}` : ""} !
+                  </h1>
+                  <p className="mx-auto max-w-md text-body text-muted-foreground">
+                    Je suis votre assistant documentaire intelligent. J'analyse nos ressources internes pour répondre à vos questions en un instant.
                   </p>
                 </div>
 
-                <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2">
-                  {SUGGESTED_QUESTIONS.map((q, i) => (
-                    <button
-                      key={i}
-                      onClick={() => sendMessage(q.text)}
-                      className="group flex flex-col items-start gap-2 rounded-xl border border-border bg-card p-4 text-left transition-all hover:border-primary/50 hover:bg-primary/5 hover:shadow-md"
-                    >
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                        {q.icon}
+                {/* Expertise Pillars */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {EXPERTISE_CATEGORIES.map((cat, i) => (
+                    <div key={i} className="flex flex-col space-y-3 rounded-2xl border border-border bg-card p-5 shadow-sm">
+                      <div className="flex items-center gap-2 font-semibold text-sm">
+                        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-muted">
+                          {cat.icon}
+                        </div>
+                        {cat.title}
                       </div>
-                      <span className="text-xs font-medium text-foreground">{q.text}</span>
-                    </button>
+                      <div className="flex flex-col gap-2">
+                        {cat.questions.map((q, j) => (
+                          <button
+                            key={j}
+                            onClick={() => sendMessage(q)}
+                            className="text-left text-xs text-muted-foreground hover:text-primary transition-colors line-clamp-1"
+                          >
+                            • {q}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   ))}
+                </div>
+
+                {/* Proactive Tips & Privacy */}
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="flex-1 flex items-start gap-3 rounded-xl bg-blue-50/50 dark:bg-blue-900/10 p-4 border border-blue-100/50 dark:border-blue-900/20">
+                    <Zap className="h-4 w-4 text-blue-500 mt-0.5" />
+                    <div className="space-y-1">
+                      <p className="text-xs font-semibold text-blue-700 dark:text-blue-400">Conseil d'utilisation</p>
+                      <p className="text-[11px] text-blue-600/80 dark:text-blue-400/70 leading-relaxed">
+                        Je garde le contexte en mémoire. Vous pouvez poser des questions de suivi comme : "Est-ce applicable à ma famille ?"
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex-1 flex items-start gap-3 rounded-xl bg-muted/30 p-4 border border-border/50">
+                    <ShieldCheck className="h-4 w-4 text-muted-foreground mt-0.5" />
+                    <div className="space-y-1">
+                      <p className="text-xs font-semibold text-muted-foreground">Sécurité & Confidentialité</p>
+                      <p className="text-[11px] text-muted-foreground/70 leading-relaxed">
+                        Vos échanges sont privés et sécurisés. Les réponses sont générées exclusivement à partir de nos documents internes.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}

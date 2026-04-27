@@ -11,9 +11,12 @@ import { ListAllDocumentsUseCase } from '#admin/application/use-cases/list-all-d
 import { ListFeedbacksUseCase } from '#admin/application/use-cases/list-feelbacks.use-case';
 import { ListGuestTokensUseCase } from '#admin/application/use-cases/list-guest-tokens.use-case';
 import { ListQueryLogsUseCase } from '#admin/application/use-cases/list-query.use-case';
+import { GetSessionLogsUseCase } from '#admin/application/use-cases/get-session-logs.use-case';
 import { ReindexAllUseCase } from '#admin/application/use-cases/reindex-all.use-case';
 import { ResolveFeedbackUseCase } from '#admin/application/use-cases/resolve-feedback.use-case';
 import { RevokeGuestTokenUseCase } from '#admin/application/use-cases/revoke-guest-token.use-case';
+import { ADMIN_METRICS_REPOSITORY } from '#admin/domain/repositories/admin-metrics.repository';
+import { AdminMetricsRepositoryImplementation } from '#admin/infrastructure/repositories/admin-metrics.repository.implementation';
 import { DOCUMENT_REPOSITORY } from '#admin/domain/repositories/document.repository';
 import { FEEDBACK_REPOSITORY } from '#admin/domain/repositories/feedback.repository';
 import { QUERY_LOGS_REPOSITORY } from '#admin/domain/repositories/query-logs.repository';
@@ -55,6 +58,7 @@ import { AuthModule } from '../auth/auth.module';
     ResolveFeedbackUseCase,
     // Use cases — Logs
     ListQueryLogsUseCase,
+    GetSessionLogsUseCase,
     // Use cases — Guests
     ListGuestTokensUseCase,
     CreateGuestTokenUseCase,
@@ -72,6 +76,10 @@ import { AuthModule } from '../auth/auth.module';
     {
       provide: QUERY_LOGS_REPOSITORY,
       useClass: QueryLogsRepositoryImplementation,
+    },
+    {
+      provide: ADMIN_METRICS_REPOSITORY,
+      useClass: AdminMetricsRepositoryImplementation,
     },
     {
       provide: GUEST_TOKEN_REPOSITORY,

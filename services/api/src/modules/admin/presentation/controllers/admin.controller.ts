@@ -14,6 +14,7 @@ import { ListAllDocumentsUseCase } from '#admin/application/use-cases/list-all-d
 import { ListFeedbacksUseCase } from '#admin/application/use-cases/list-feelbacks.use-case';
 import { ListGuestTokensUseCase } from '#admin/application/use-cases/list-guest-tokens.use-case';
 import { ListQueryLogsUseCase } from '#admin/application/use-cases/list-query.use-case';
+import { GetSessionLogsUseCase } from '#admin/application/use-cases/get-session-logs.use-case';
 import { ReindexAllUseCase } from '#admin/application/use-cases/reindex-all.use-case';
 import { ResolveFeedbackUseCase } from '#admin/application/use-cases/resolve-feedback.use-case';
 import { RevokeGuestTokenUseCase } from '#admin/application/use-cases/revoke-guest-token.use-case';
@@ -58,6 +59,7 @@ export class AdminController {
     private readonly _listFeedbacksUseCase: ListFeedbacksUseCase,
     private readonly _resolveFeedbackUseCase: ResolveFeedbackUseCase,
     private readonly _listQueryLogsUseCase: ListQueryLogsUseCase,
+    private readonly _getSessionLogsUseCase: GetSessionLogsUseCase,
     private readonly _reindexAllUseCase: ReindexAllUseCase,
     private readonly _listGuestTokensUseCase: ListGuestTokensUseCase,
     private readonly _createGuestTokenUseCase: CreateGuestTokenUseCase,
@@ -183,6 +185,7 @@ export class AdminController {
     @Query('to') to?: string,
     @Query('role') role?: string,
     @Query('flagged') flagged?: string,
+    @Query('ignorance') ignorance?: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
@@ -191,9 +194,15 @@ export class AdminController {
       to: to ? new Date(to) : undefined,
       role,
       flagged: flagged !== undefined ? flagged === 'true' : undefined,
+      ignorance: ignorance !== undefined ? ignorance === 'true' : undefined,
       page: page ? parseInt(page, 10) : 1,
       limit: limit ? parseInt(limit, 10) : 10,
     });
+  }
+
+  @Get('logs/session/:id')
+  async getSessionLogs(@Param('id') id: string) {
+    return await this._getSessionLogsUseCase.execute(id);
   }
 
   @Post('reindex')

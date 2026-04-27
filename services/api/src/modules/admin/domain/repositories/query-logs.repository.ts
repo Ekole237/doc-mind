@@ -11,6 +11,7 @@ export interface QueryLogsFilter {
   from?: Date;
   role?: string;
   flagged?: boolean;
+  ignorance?: boolean;
   page?: number;
   to?: Date;
   limit?: number;

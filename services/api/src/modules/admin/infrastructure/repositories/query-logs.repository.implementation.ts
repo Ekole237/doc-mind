@@ -46,6 +46,9 @@ export class QueryLogsRepositoryImplementation implements QueryLogsRepository {
         : {}),
       ...(filter.role ? { role: filter.role } : {}),
       ...(filter.flagged !== undefined ? { isFlagged: filter.flagged } : {}),
+      ...(filter.ignorance !== undefined
+        ? { isIgnorance: filter.ignorance }
+        : {}),
     };
   }
 }

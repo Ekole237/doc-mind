@@ -48,6 +48,10 @@ export function DashboardPage() {
               variant="danger"
             />
             <MetricCard label="Requêtes ce mois" value={metrics.queriesThisMonth} />
+            
+            <MetricCard label="Utilisateurs totaux" value={metrics.totalUsers} />
+            <MetricCard label="Utilisateurs actifs (Mois)" value={metrics.activeUsersMonth} variant="info" />
+            <MetricCard label="Moy. Sessions/Utilisateur" value={metrics.averageSessionsPerUser} variant="info" />
           </div>
         )}
       </div>

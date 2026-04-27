@@ -95,6 +95,9 @@ export interface DashboardMetrics {
   documentsPending: number
   feedbacksPending: number
   queriesThisMonth: number
+  totalUsers: number
+  activeUsersMonth: number
+  averageSessionsPerUser: number
 }
 
 export interface AdminDocument {
@@ -126,6 +129,7 @@ export interface AdminQueryLog {
   _isGuest: boolean
   _isIgnorance: boolean
   _isFlagged: boolean
+  _chatSessionId: string | null
   _sourceDocId: string | null
   _sourceDocName: string | null
   _sourceDriveUrl: string | null
