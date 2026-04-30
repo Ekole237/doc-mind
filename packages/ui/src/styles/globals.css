@@ -9,7 +9,7 @@
 @source "../**/*.{ts,tsx}";
 
 @theme inline {
-    --font-heading: var(--font-rebond);
+    --font-heading: var(--font-display);
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -49,11 +49,53 @@
     --radius-3xl: calc(var(--radius) * 2.2);
     --radius-4xl: calc(var(--radius) * 2.6);
     --font-sans: 'Inter Variable', sans-serif;
-    --font-aeonik: 'Aeonik', sans-serif;
-    --font-rebond: 'Rebond Grotesque', sans-serif;
+    --font-body: 'Aeonik', sans-serif;
+    --font-display: 'Rebond Grotesque', sans-serif;
+    --font-aeonik: var(--font-body);
+    --font-rebond: var(--font-display);
 }
 
 :root {
+    /* Typography tokens */
+    --text-title-lg-size: 48px;
+    --text-title-lg-line-height: 52px;
+    --text-title-lg-letter-spacing: -2px;
+    --text-title-lg-weight: 700;
+    --text-title-md-size: 36px;
+    --text-title-md-line-height: 40px;
+    --text-title-md-letter-spacing: -2px;
+    --text-title-md-weight: 700;
+    --text-title-sm-size: 24px;
+    --text-title-sm-line-height: 28px;
+    --text-title-sm-letter-spacing: -2px;
+    --text-title-sm-weight: 700;
+    --text-title-xs-size: 16px;
+    --text-title-xs-line-height: 20px;
+    --text-title-xs-letter-spacing: 0;
+    --text-title-xs-weight: 700;
+    --text-subtitle-md-size: 16px;
+    --text-subtitle-md-line-height: 24px;
+    --text-subtitle-sm-size: 14px;
+    --text-subtitle-sm-line-height: 22px;
+    --text-subtitle-xs-size: 12px;
+    --text-subtitle-xs-line-height: 20px;
+    --text-md-size: 16px;
+    --text-md-line-height: 24px;
+    --text-sm-size: 14px;
+    --text-sm-line-height: 22px;
+    --text-xs-size: 12px;
+    --text-xs-line-height: 20px;
+    --btn-md-size: 16px;
+    --btn-md-line-height: 24px;
+    --btn-sm-size: 14px;
+    --btn-sm-line-height: 16px;
+    --btn-xs-size: 12px;
+    --btn-xs-line-height: 12px;
+    --input-sm-size: 14px;
+    --input-sm-line-height: 16px;
+    --input-label-size: 12px;
+    --input-label-line-height: 12px;
+
     /* Light mode - Light surfaces */
     --background: #FFFFFF;
     --foreground: #0E0F0C;
@@ -187,44 +229,170 @@
   
   /* Semantic typography utility classes */
   .title-lg {
-    font-family: var(--font-rebond);
-    font-weight: 700;
-    font-size: clamp(1rem, 8vw, 3rem);
-    letter-spacing: -0.02em;
-    line-height: 1.1;
+    font-family: var(--font-display);
+    font-weight: var(--text-title-lg-weight);
+    font-size: var(--text-title-lg-size);
+    line-height: var(--text-title-lg-line-height);
+    letter-spacing: var(--text-title-lg-letter-spacing);
+  }
+
+  .title-md {
+    font-family: var(--font-display);
+    font-weight: var(--text-title-md-weight);
+    font-size: var(--text-title-md-size);
+    line-height: var(--text-title-md-line-height);
+    letter-spacing: var(--text-title-md-letter-spacing);
+  }
+
+  .title-sm {
+    font-family: var(--font-display);
+    font-weight: var(--text-title-sm-weight);
+    font-size: var(--text-title-sm-size);
+    line-height: var(--text-title-sm-line-height);
+    letter-spacing: var(--text-title-sm-letter-spacing);
+  }
+
+  .title-xs {
+    font-family: var(--font-body);
+    font-weight: var(--text-title-xs-weight);
+    font-size: var(--text-title-xs-size);
+    line-height: var(--text-title-xs-line-height);
+    letter-spacing: var(--text-title-xs-letter-spacing);
   }
 
   .subtitle-md {
-    font-family: var(--font-aeonik);
+    font-family: var(--font-body);
     font-weight: 400;
-    font-size: clamp(0.75rem, 4vw, 1rem);
-    line-height: 1.5;
+    font-size: var(--text-subtitle-md-size);
+    line-height: var(--text-subtitle-md-line-height);
+  }
+
+  .subtitle-sm {
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-size: var(--text-subtitle-sm-size);
+    line-height: var(--text-subtitle-sm-line-height);
+  }
+
+  .subtitle-xs {
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-size: var(--text-subtitle-xs-size);
+    line-height: var(--text-subtitle-xs-line-height);
   }
 
   .text-body {
-    font-family: var(--font-aeonik);
+    font-family: var(--font-body);
     font-weight: 400;
-    font-size: clamp(0.75rem, 4vw, 1rem);
-    line-height: 1.6;
+    font-size: var(--text-md-size);
+    line-height: var(--text-md-line-height);
+  }
+
+  .text-sm {
+    font-family: var(--font-body);
+    font-size: var(--text-sm-size);
+    line-height: var(--text-sm-line-height);
+  }
+
+  .text-xs {
+    font-family: var(--font-body);
+    font-size: var(--text-xs-size);
+    line-height: var(--text-xs-line-height);
+  }
+
+  .text-regular {
+    font-weight: 400;
+  }
+
+  .text-medium {
+    font-weight: 500;
+  }
+
+  .text-italic {
+    font-style: italic;
   }
 
   .text-button {
-    font-family: var(--font-aeonik);
+    font-family: var(--font-body);
     font-weight: 500;
-    font-size: clamp(0.75rem, 4vw, 1rem);
-    letter-spacing: 0.01em;
+    font-size: var(--btn-md-size);
+    line-height: var(--btn-md-line-height);
+    letter-spacing: 0;
+  }
+
+  .text-button-sm {
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: var(--btn-sm-size);
+    line-height: var(--btn-sm-line-height);
+    letter-spacing: 0;
+  }
+
+  .text-button-xs {
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: var(--btn-xs-size);
+    line-height: var(--btn-xs-line-height);
+    letter-spacing: 0;
   }
 
   .text-input {
-    font-family: var(--font-aeonik);
-    font-size: 0.875rem;
-    line-height: 1.25rem;
+    font-family: var(--font-body);
+    font-size: var(--input-sm-size);
+    line-height: var(--input-sm-line-height);
+  }
+
+  .text-input-placeholder {
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-size: var(--input-sm-size);
+    line-height: var(--input-sm-line-height);
+  }
+
+  .text-input-content {
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: var(--input-sm-size);
+    line-height: var(--input-sm-line-height);
+  }
+
+  .text-input-label {
+    font-family: var(--font-body);
+    font-weight: 400;
+    font-size: var(--input-label-size);
+    line-height: var(--input-label-line-height);
+  }
+
+  .text-input-button {
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: var(--input-label-size);
+    line-height: var(--input-label-line-height);
   }
 
   .text-link {
-    font-family: var(--font-aeonik);
+    font-family: var(--font-body);
     font-weight: 500;
-    font-size: clamp(0.75rem, 4vw, 1rem);
+    font-size: var(--text-md-size);
+    line-height: var(--text-md-line-height);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  .text-link-sm {
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: var(--text-sm-size);
+    line-height: var(--text-sm-line-height);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  .text-link-xs {
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: var(--text-xs-size);
+    line-height: var(--text-xs-line-height);
     text-decoration: underline;
     text-underline-offset: 4px;
   }

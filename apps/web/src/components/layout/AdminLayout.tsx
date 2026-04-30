@@ -3,7 +3,7 @@ import { Activity, ArrowLeft, FileText, LayoutDashboard, LogOut, Menu, MessageSq
 import type { ReactNode } from "react"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { useAuth } from "../../hooks/useAuth"
+import { useAuth } from "@/hooks/useAuth.ts"
 
 interface AdminLayoutProps {
   children: ReactNode

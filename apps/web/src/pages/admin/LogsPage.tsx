@@ -6,15 +6,17 @@ import {
   Search, 
   Filter, 
   Calendar, 
-  User, 
+  User as UserIcon, 
   AlertCircle, 
   HelpCircle, 
   ChevronLeft, 
   ChevronRight,
   Clock,
   MessageSquare,
-  RefreshCw
+  RefreshCw,
+  Bot
 } from "lucide-react"
+import ReactMarkdown from "react-markdown"
 import { useState, useEffect, useCallback } from "react"
 import { admin } from "../../api/client"
 import { AdminLayout } from "../../components/layout/AdminLayout"
@@ -68,7 +70,7 @@ function ConversationModal({ sessionId, onClose }: ConversationModalProps) {
           </button>
         </div>
         
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-6 space-y-8">
           {loading && (
             <div className="flex h-64 flex-col items-center justify-center gap-3">
               <RefreshCw className="h-8 w-8 animate-spin text-primary/40" />
@@ -84,35 +86,55 @@ function ConversationModal({ sessionId, onClose }: ConversationModalProps) {
           )}
           
           {!loading && !error && logs.map((log) => (
-            <div key={log._id} className="space-y-4">
+            <div key={log._id} className="space-y-6">
               {/* User Message */}
-              <div className="flex flex-col items-end">
-                <div className="max-w-[85%] rounded-2xl rounded-tr-none bg-primary px-4 py-3 text-sm text-primary-foreground shadow-sm">
-                  {log._question}
+              <div className="flex flex-row-reverse items-start gap-3">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm border border-primary">
+                  <UserIcon className="h-4 w-4" />
                 </div>
-                <div className="mt-1.5 flex items-center gap-1.5 px-1">
-                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Utilisateur</span>
+                <div className="flex flex-col items-end max-w-[80%]">
+                  <div className="rounded-2xl rounded-tr-none bg-primary px-4 py-2.5 text-sm text-primary-foreground shadow-sm">
+                    {log._question}
+                  </div>
+                  <span className="mt-1 text-[10px] font-medium text-muted-foreground uppercase tracking-wider px-1">Utilisateur</span>
                 </div>
               </div>
               
               {/* Assistant Message */}
-              <div className="flex flex-col items-start">
-                <div className={`max-w-[85%] rounded-2xl rounded-tl-none px-4 py-3 text-sm shadow-sm ${
-                  log._isIgnorance ? "bg-destructive/5 border border-destructive/20" : "bg-muted/50 border border-border/50"
-                }`}>
-                  {log._answer}
-                  {log._isIgnorance && (
-                    <div className="mt-3 flex items-center gap-1.5 rounded-lg bg-destructive/10 px-2 py-1.5 text-[11px] font-medium text-destructive">
-                      <HelpCircle className="h-3.5 w-3.5" />
-                      L'IA n'a pas trouvé de réponse pertinente.
-                    </div>
-                  )}
+              <div className="flex flex-row items-start gap-3">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted border border-border shadow-sm">
+                  <Bot className="h-4 w-4 text-muted-foreground" />
                 </div>
-                <div className="mt-1.5 flex items-center gap-1.5 px-1">
-                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Assistant</span>
-                  {log._responseTimeMs > 0 && (
-                    <span className="text-[10px] text-muted-foreground/50">• {log._responseTimeMs}ms</span>
-                  )}
+                <div className="flex flex-col items-start max-w-[80%]">
+                  <div className={`rounded-2xl rounded-tl-none px-4 py-2.5 text-sm shadow-sm border ${
+                    log._isIgnorance ? "bg-destructive/5 border-destructive/20 text-foreground" : "bg-muted/50 border-border/50 text-foreground"
+                  }`}>
+                    <div className="max-w-none prose prose-sm dark:prose-invert">
+                      <ReactMarkdown
+                        components={{
+                          p: ({ children }) => <p className="mb-2 last:mb-0 leading-relaxed whitespace-pre-wrap break-words">{children}</p>,
+                          ul: ({ children }) => <ul className="mb-2 ml-4 list-disc space-y-1">{children}</ul>,
+                          ol: ({ children }) => <ol className="mb-2 ml-4 list-decimal space-y-1">{children}</ol>,
+                          li: ({ children }) => <li className="marker:text-muted-foreground/60">{children}</li>,
+                          strong: ({ children }) => <strong className="font-bold">{children}</strong>,
+                        }}
+                      >
+                        {log._answer}
+                      </ReactMarkdown>
+                    </div>
+                    {log._isIgnorance && (
+                      <div className="mt-3 flex items-center gap-1.5 rounded-lg bg-destructive/10 px-2 py-1.5 text-[10px] font-medium text-destructive">
+                        <HelpCircle className="h-3.5 w-3.5" />
+                        Sans réponse pertinente trouvée.
+                      </div>
+                    )}
+                  </div>
+                  <div className="mt-1 flex items-center gap-1.5 px-1">
+                    <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Assistant</span>
+                    {log._responseTimeMs > 0 && (
+                      <span className="text-[10px] text-muted-foreground/40">• {log._responseTimeMs}ms</span>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -236,7 +258,7 @@ export function LogsPage() {
             {/* Role Group */}
             <div className="flex items-center gap-2 rounded-lg bg-muted/50 p-1">
               <div className="flex items-center gap-2 px-2 text-muted-foreground">
-                <User className="h-4 w-4 shrink-0" />
+                <UserIcon className="h-4 w-4 shrink-0" />
                 <span className="hidden text-xs font-medium uppercase tracking-wider sm:inline">Rôle</span>
               </div>
               <select
@@ -366,7 +388,7 @@ export function LogsPage() {
                               <Badge variant="pending" className="px-1.5 py-0 text-[10px] h-5">Signalé</Badge>
                             )}
                             {log._isIgnorance && (
-                              <Badge variant="destructive" className="px-1.5 py-0 text-[10px] h-5">Échec RAG</Badge>
+                              <Badge variant="error" className="px-1.5 py-0 text-[10px] h-5">Échec RAG</Badge>
                             )}
                             {!log._isFlagged && !log._isIgnorance && (
                               <Badge variant="success" className="px-1.5 py-0 text-[10px] h-5 opacity-70">OK</Badge>
@@ -403,7 +425,7 @@ export function LogsPage() {
                       </div>
                       <div className="flex gap-1.5">
                         {log._isFlagged && <Badge variant="pending" className="text-[9px] px-1 h-4">Signalé</Badge>}
-                        {log._isIgnorance && <Badge variant="destructive" className="text-[9px] px-1 h-4">Échec</Badge>}
+                        {log._isIgnorance && <Badge variant="error" className="text-[9px] px-1 h-4">Échec</Badge>}
                       </div>
                     </div>
                     
