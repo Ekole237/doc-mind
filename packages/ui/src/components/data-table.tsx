@@ -439,7 +439,7 @@ export function DataTable<T extends { id?: string }>({
                     return (
                       <div key={cell.id}>
                         <div className="font-medium text-foreground">
-                          {cell.column.columnDef.header}
+                          {flexRender(cell.column.columnDef.header, cell.getContext())}
                         </div>
                         <div>
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}
