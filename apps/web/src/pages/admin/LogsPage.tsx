@@ -1,28 +1,62 @@
-import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
-import { Input } from "@workspace/ui/components/input"
+import { Checkbox } from "@workspace/ui/components/checkbox"
+import { Calendar as DateCalendar } from "@workspace/ui/components/calendar"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@workspace/ui/components/dropdown-menu"
+import { Popover, PopoverContent, PopoverTrigger } from "@workspace/ui/components/popover"
 import { 
   X, 
-  Search, 
   Filter, 
-  Calendar, 
+  CalendarDays,
+  Check,
+  ChevronDown,
   User as UserIcon, 
   AlertCircle, 
   HelpCircle, 
-  ChevronLeft, 
-  ChevronRight,
-  Clock,
   MessageSquare,
   RefreshCw,
   Bot
 } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import { useState, useEffect, useCallback } from "react"
-import { admin } from "../../api/client"
+import { admin } from "@/api/client.ts"
 import { AdminLayout } from "../../components/layout/AdminLayout"
-import type { AdminQueryLog, ApiError } from "../../types"
+import type { AdminQueryLog, ApiError } from "@/types"
+import { FlexiFilterTable } from "@workspace/ui/components/flexi-filter-table"
+import type { FlexiFilterTableRow } from "@workspace/ui/components/flexi-filter-table"
 
 const LIMIT = 15
+
+const ROLE_OPTIONS = [
+  { value: "", label: "Tous" },
+  { value: "employee", label: "Employé" },
+  { value: "admin", label: "Admin" },
+  { value: "guest", label: "Invité" },
+] as const
+
+function parseDateInput(value: string): Date | undefined {
+  if (!value) {
+    return undefined
+  }
+
+  const [year, month, day] = value.split("-").map(Number)
+  if (!year || !month || !day) {
+    return undefined
+  }
+
+  return new Date(year, month - 1, day)
+}
+
+function formatDateInput(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+  const day = String(date.getDate()).padStart(2, "0")
+  return `${year}-${month}-${day}`
+}
 
 function getApiMessage(err: unknown, fallback: string): string {
   const e = err as { response?: { data?: ApiError } }
@@ -181,10 +215,11 @@ export function LogsPage() {
       .finally(() => setIsLoading(false))
   }, [from, to, role, flagged, ignorance])
 
-  // Auto-load on mount
+
   useEffect(() => {
-    fetchLogs(1)
-  }, [])
+    const fetch = async () => fetchLogs(1)
+    void fetch()
+  }, [fetchLogs])
 
   const handleApply = () => fetchLogs(1)
 
@@ -201,6 +236,17 @@ export function LogsPage() {
       .finally(() => setIsLoading(false))
   }
 
+  const tableRows: FlexiFilterTableRow[] = logs.map((log) => ({
+    id: log._id,
+    sessionId: log._chatSessionId,
+    question: log._question,
+    role: log._role,
+    flagged: log._isFlagged,
+    ignorance: log._isIgnorance,
+    responseTimeMs: log._responseTimeMs,
+    timestamp: log._timestamp,
+  }))
+
   return (
     <AdminLayout currentPage="logs">
       <div className="flex flex-col h-full space-y-6 p-6">
@@ -208,7 +254,7 @@ export function LogsPage() {
         <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Logs d'activité</h1>
-            <p className="text-muted-foreground">Surveillez et analysez les interactions avec l'IA.</p>
+            <p className="text-muted-foreground text-sm">Surveillez et analysez les interactions avec l'IA.</p>
           </div>
           <Button 
             variant="outline" 
@@ -235,23 +281,47 @@ export function LogsPage() {
             {/* Date Range Group */}
             <div className="flex flex-wrap items-center gap-1 rounded-lg bg-muted/50 p-1 sm:flex-nowrap sm:gap-2">
               <div className="flex items-center gap-2 px-2 text-muted-foreground">
-                <Calendar className="h-4 w-4 shrink-0" />
+                <CalendarDays className="h-4 w-4 shrink-0" />
                 <span className="hidden text-xs font-medium uppercase tracking-wider sm:inline">Dates</span>
               </div>
               <div className="flex items-center gap-1 sm:gap-2">
-                <Input 
-                  type="date" 
-                  value={from} 
-                  onChange={(e) => setFrom(e.target.value)}
-                  className="h-8 w-[115px] border-none bg-transparent p-0 text-[11px] focus-visible:ring-0 sm:w-32 sm:px-1 sm:text-xs" 
-                />
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-[115px] justify-start px-2 text-[11px] font-medium sm:w-32 sm:text-xs"
+                    >
+                      {from || "Début"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-2" align="start">
+                    <DateCalendar
+                      mode="single"
+                      selected={parseDateInput(from)}
+                      onSelect={(date) => setFrom(date ? formatDateInput(date) : "")}
+                    />
+                  </PopoverContent>
+                </Popover>
                 <span className="text-muted-foreground/30">—</span>
-                <Input 
-                  type="date" 
-                  value={to} 
-                  onChange={(e) => setTo(e.target.value)}
-                  className="h-8 w-[115px] border-none bg-transparent p-0 text-[11px] focus-visible:ring-0 sm:w-32 sm:px-1 sm:text-xs" 
-                />
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-[115px] justify-start px-2 text-[11px] font-medium sm:w-32 sm:text-xs"
+                    >
+                      {to || "Fin"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-2" align="start">
+                    <DateCalendar
+                      mode="single"
+                      selected={parseDateInput(to)}
+                      onSelect={(date) => setTo(date ? formatDateInput(date) : "")}
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
 
@@ -261,36 +331,40 @@ export function LogsPage() {
                 <UserIcon className="h-4 w-4 shrink-0" />
                 <span className="hidden text-xs font-medium uppercase tracking-wider sm:inline">Rôle</span>
               </div>
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                className="h-8 bg-transparent px-2 text-[11px] font-medium focus:outline-none sm:text-xs"
-              >
-                <option value="">Tous</option>
-                <option value="employee">Employé</option>
-                <option value="admin">Admin</option>
-                <option value="guest">Invité</option>
-              </select>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 gap-1 px-2 text-[11px] font-medium sm:text-xs"
+                  >
+                    {ROLE_OPTIONS.find((option) => option.value === role)?.label ?? "Tous"}
+                    <ChevronDown className="h-3.5 w-3.5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  {ROLE_OPTIONS.map((option) => (
+                    <DropdownMenuItem
+                      key={option.value || "all"}
+                      onClick={() => setRole(option.value)}
+                      className="flex items-center justify-between gap-2"
+                    >
+                      {option.label}
+                      {role === option.value && <Check className="h-3.5 w-3.5" />}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
 
             {/* Toggles Group */}
             <div className="flex items-center gap-4 px-2">
               <label className="flex cursor-pointer items-center gap-2 text-xs font-medium transition-colors hover:text-primary">
-                <input
-                  type="checkbox"
-                  checked={flagged}
-                  onChange={(e) => setFlagged(e.target.checked)}
-                  className="h-4 w-4 rounded border-border text-primary focus:ring-primary/20"
-                />
+                <Checkbox checked={flagged} onCheckedChange={(checked) => setFlagged(checked === true)} />
                 Signalés
               </label>
               <label className="flex cursor-pointer items-center gap-2 text-xs font-medium transition-colors hover:text-primary">
-                <input
-                  type="checkbox"
-                  checked={ignorance}
-                  onChange={(e) => setIgnorance(e.target.checked)}
-                  className="h-4 w-4 rounded border-border text-primary focus:ring-primary/20"
-                />
+                <Checkbox checked={ignorance} onCheckedChange={(checked) => setIgnorance(checked === true)} />
                 Sans réponse
               </label>
             </div>
@@ -319,164 +393,11 @@ export function LogsPage() {
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 min-h-[400px]">
-          {isLoading ? (
-            <div className="space-y-4">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="h-16 animate-pulse rounded-xl bg-muted/50" />
-              ))}
-            </div>
-          ) : logs.length === 0 ? (
-            <div className="flex h-[400px] flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-muted/20 text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                <Search className="h-6 w-6 text-muted-foreground/50" />
-              </div>
-              <h3 className="mt-4 text-lg font-semibold text-foreground">Aucun log trouvé</h3>
-              <p className="mt-1 text-sm text-muted-foreground">Essayez d'ajuster vos filtres pour voir plus de résultats.</p>
-              <Button variant="link" onClick={handleReset} className="mt-2 text-primary">Effacer tous les filtres</Button>
-            </div>
-          ) : (
-            <div className="flex flex-col h-full">
-              {/* Desktop View */}
-              <div className="hidden md:block overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-border bg-muted/30">
-                      <th className="px-4 py-4 text-left font-semibold text-muted-foreground">Moment</th>
-                      <th className="px-4 py-4 text-left font-semibold text-muted-foreground">Interaction</th>
-                      <th className="px-4 py-4 text-left font-semibold text-muted-foreground">Profil</th>
-                      <th className="px-4 py-4 text-left font-semibold text-muted-foreground">Statut</th>
-                      <th className="px-4 py-4 text-right font-semibold text-muted-foreground">Perf</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border/50">
-                    {logs.map((log) => (
-                      <tr 
-                        key={log._id} 
-                        className="group cursor-pointer transition-colors hover:bg-primary/[0.02]"
-                        onClick={() => log._chatSessionId && setSelectedSessionId(log._chatSessionId)}
-                      >
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          <div className="flex items-center gap-2.5">
-                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                              <Clock className="h-4 w-4" />
-                            </div>
-                            <div>
-                              <div className="font-medium text-foreground">
-                                {new Date(log._timestamp).toLocaleDateString("fr-FR", { day: "2-digit", month: "short" })}
-                              </div>
-                              <div className="text-[11px] text-muted-foreground">
-                                {new Date(log._timestamp).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-4 py-4">
-                          <div className="max-w-[400px] space-y-1">
-                            <p className="font-medium text-foreground line-clamp-1 group-hover:text-primary transition-colors">{log._question}</p>
-                            <p className="text-xs text-muted-foreground line-clamp-1">{log._answer}</p>
-                          </div>
-                        </td>
-                        <td className="px-4 py-4">
-                          <Badge variant="outline" className="capitalize border-border/60 bg-muted/30 font-medium text-[11px]">
-                            {log._role}
-                          </Badge>
-                        </td>
-                        <td className="px-4 py-4">
-                          <div className="flex flex-wrap gap-1.5">
-                            {log._isFlagged && (
-                              <Badge variant="pending" className="px-1.5 py-0 text-[10px] h-5">Signalé</Badge>
-                            )}
-                            {log._isIgnorance && (
-                              <Badge variant="error" className="px-1.5 py-0 text-[10px] h-5">Échec RAG</Badge>
-                            )}
-                            {!log._isFlagged && !log._isIgnorance && (
-                              <Badge variant="success" className="px-1.5 py-0 text-[10px] h-5 opacity-70">OK</Badge>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-4 py-4 text-right tabular-nums">
-                          <span className={`text-xs font-medium ${
-                            log._responseTimeMs > 2000 ? "text-orange-500" : "text-muted-foreground"
-                          }`}>
-                            {log._responseTimeMs}ms
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Mobile View */}
-              <div className="space-y-3 md:hidden">
-                {logs.map((log) => (
-                  <div 
-                    key={log._id} 
-                    className="rounded-xl border border-border bg-card p-4 space-y-3 shadow-sm active:scale-[0.98] transition-transform"
-                    onClick={() => log._chatSessionId && setSelectedSessionId(log._chatSessionId)}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="h-2 w-2 rounded-full bg-primary/40" />
-                        <span className="text-xs font-bold text-foreground">
-                          {new Date(log._timestamp).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}
-                        </span>
-                      </div>
-                      <div className="flex gap-1.5">
-                        {log._isFlagged && <Badge variant="pending" className="text-[9px] px-1 h-4">Signalé</Badge>}
-                        {log._isIgnorance && <Badge variant="error" className="text-[9px] px-1 h-4">Échec</Badge>}
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <p className="text-sm font-semibold text-foreground line-clamp-2">{log._question}</p>
-                      <p className="text-xs text-muted-foreground line-clamp-2">{log._answer}</p>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-1 border-t border-border/50">
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-[10px] capitalize h-4 px-1.5">{log._role}</Badge>
-                      </div>
-                      <span className="text-[10px] font-medium text-muted-foreground">{log._responseTimeMs}ms</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Pagination Bar */}
-              <div className="mt-6 flex items-center justify-between rounded-xl border border-border bg-muted/30 p-2">
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  className="gap-1.5 h-8 text-xs font-medium"
-                  onClick={() => fetchLogs(page - 1)} 
-                  disabled={page === 1 || isLoading}
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                  Précédent
-                </Button>
-                
-                <div className="flex items-center gap-2 px-3">
-                  <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60">Page</span>
-                  <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-xs font-bold text-primary-foreground shadow-sm">
-                    {page}
-                  </div>
-                </div>
-
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  className="gap-1.5 h-8 text-xs font-medium"
-                  onClick={() => fetchLogs(page + 1)} 
-                  disabled={logs.length < LIMIT || isLoading}
-                >
-                  Suivant
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          )}
+        <div className="flex-1 min-h-100">
+          <FlexiFilterTable
+            data={tableRows}
+            onViewSession={(sessionId) => setSelectedSessionId(sessionId)}
+          />
         </div>
 
         {/* Conversation View Overlay */}

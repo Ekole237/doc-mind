@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react"
-import { admin } from "../../api/client"
+import { admin } from "@/api/client.ts"
 import { MetricCard } from "../../components/admin/MetricCard"
 import { AdminLayout } from "../../components/layout/AdminLayout"
-import type { DashboardMetrics } from "../../types"
+import type { DashboardMetrics } from "@/types"
 
 export function DashboardPage() {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null)
@@ -50,8 +50,8 @@ export function DashboardPage() {
             <MetricCard label="Requêtes ce mois" value={metrics.queriesThisMonth} />
             
             <MetricCard label="Utilisateurs totaux" value={metrics.totalUsers} />
-            <MetricCard label="Utilisateurs actifs (Mois)" value={metrics.activeUsersMonth} variant="info" />
-            <MetricCard label="Moy. Sessions/Utilisateur" value={metrics.averageSessionsPerUser} variant="info" />
+            <MetricCard label="Utilisateurs actifs (Mois)" value={metrics.activeUsersMonth} />
+            <MetricCard label="Moy. Sessions/Utilisateur" value={metrics.averageSessionsPerUser} />
           </div>
         )}
       </div>

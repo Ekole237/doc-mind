@@ -15,12 +15,12 @@ export function MetricCard({ label, value, description, variant = "default" }: M
         ? "text-orange-500"
         : variant === "info"
           ? "text-blue-500"
-          : "text-foreground"
+          : "text-primary"
 
   return (
-    <Card>
-      <CardContent className="pt-6">
-        <p className="text-sm font-medium text-muted-foreground">{label}</p>
+    <Card className={"border-2 border-gray-400 font-sans"}>
+      <CardContent>
+        <p className="text-sm text-medium text-gray-600">{label}</p>
         <p className={`mt-2 text-4xl font-bold ${valueColor}`}>{value}</p>
         {description && <p className="mt-1 text-xs text-muted-foreground">{description}</p>}
       </CardContent>
