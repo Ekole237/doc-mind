@@ -1,15 +1,16 @@
+import EjaraLogo from "@/assets/icons/Logo.svg?react"
+import EjaraTextLogo from "@/assets/icons/ejara.svg?react"
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
-import { Bot, FileText, History, LogOut, Menu, Search, Send, Sparkles, X, PlusCircle, ShieldCheck, Zap, BookOpen, MessageCircle, User, LayoutDashboard } from "lucide-react"
-import { useState, useMemo } from "react"
+import { BookOpen, Bot, History, LayoutDashboard, LogOut, Menu, MessageCircle, PlusCircle, Send, ShieldCheck, User, X, Zap } from "lucide-react"
+import { useMemo, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { FeedbackModal } from "../../components/chat/FeedbackModal"
 import { MessageBubble } from "../../components/chat/MessageBubble"
 import { SourceCitation } from "../../components/chat/SourceCitation"
 import { useAuth } from "../../hooks/useAuth"
-import { useChat } from "./useChat"
 import type { ChatSession } from "../../types"
-import { MessageSquare } from "lucide-react"
+import { useChat } from "./useChat"
 
 // --- PRESENTATIONAL COMPONENTS ---
 
@@ -77,7 +78,7 @@ function ChatSidebar({
           <div className="flex items-center gap-2 font-semibold">
             <Bot className="h-5 w-5 text-primary" />
             <div className="flex flex-col leading-tight">
-              <span>Doc Mind</span>
+              <span className="font-display">Doc Mind</span>
               <span className="text-[10px] italic text-primary font-bold tracking-wide" style={{ fontFamily: "'Lucky Beauty', cursive" }}>by Ejara</span>
             </div>
           </div>
@@ -109,7 +110,7 @@ function ChatSidebar({
           </Button>
 
           <div className="mt-6">
-            <h3 className="mb-2 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            <h3 className="mb-2 px-4 text-xs font-display text-muted-foreground uppercase tracking-wider">
               Discussions récentes
             </h3>
             <div className="space-y-1">
@@ -117,14 +118,14 @@ function ChatSidebar({
                 <Button
                   key={session.id}
                   variant={currentSessionId === session.id ? "secondary" : "ghost"}
-                  className="w-full justify-start gap-3 text-left font-normal"
+                  className="w-full justify-start gap-3 text-left font-normal cursor-pointer"
                   onClick={() => {
                     onSessionClick(session.id)
                     if (window.innerWidth < 768) onClose()
                   }}
                 >
-                  <MessageSquare className="h-4 w-4 shrink-0" />
-                  <span className="truncate">{session.title}</span>
+                  <MessageCircle className="h-4 w-4 shrink-0" />
+                  <span className="truncate text-body">{session.title}</span>
                 </Button>
               ))}
               {sessions.length === 0 && (
@@ -140,7 +141,7 @@ function ChatSidebar({
           {isAdmin && (
             <Button
               variant="ghost"
-              className="w-full justify-start gap-3 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+              className="text-muted-foreground hover:bg-accent hover:text-accent-foreground px-2 py-1 rounded-lg"
               onClick={onDashboardClick}
             >
               <LayoutDashboard className="h-4 w-4" />
@@ -179,8 +180,11 @@ function ChatHeader({ onMenuClick }: { onMenuClick: () => void }) {
       >
         <Menu className="h-5 w-5 text-muted-foreground" />
       </button>
-      <div className="flex flex-1 items-center justify-between">
-        <h2 className="subtitle-md">Assistant Documentaire</h2>
+      <div className="flex items-center justify-center gap-2">
+        <EjaraLogo width={51} height={51} fill="currentColor" />
+        <div className="pt-2">
+          <EjaraTextLogo fill="currentColor" />
+        </div>
       </div>
     </header>
   )
@@ -287,10 +291,10 @@ export function ChatPage() {
                 {/* Proactive Tips & Privacy */}
                 <div className="flex flex-col sm:flex-row gap-4">
                   <div className="flex-1 flex items-start gap-3 rounded-xl bg-blue-50/50 dark:bg-blue-900/10 p-4 border border-blue-100/50 dark:border-blue-900/20">
-                    <Zap className="h-4 w-4 text-blue-500 mt-0.5" />
+                    <Zap className="h-4 w-4 text-primary mt-0.5" />
                     <div className="space-y-1">
-                      <p className="text-xs font-semibold text-blue-700 dark:text-blue-400">Conseil d'utilisation</p>
-                      <p className="text-[11px] text-blue-600/80 dark:text-blue-400/70 leading-relaxed">
+                      <p className="text-xs font-medium text-primary dark:text-primary">Conseil d'utilisation</p>
+                      <p className="text-[11px] text-primary/80 dark:text-primary/70 leading-relaxed">
                         Je garde le contexte en mémoire. Vous pouvez poser des questions de suivi comme : "Est-ce applicable à ma famille ?"
                       </p>
                     </div>
@@ -299,7 +303,7 @@ export function ChatPage() {
                   <div className="flex-1 flex items-start gap-3 rounded-xl bg-muted/30 p-4 border border-border/50">
                     <ShieldCheck className="h-4 w-4 text-muted-foreground mt-0.5" />
                     <div className="space-y-1">
-                      <p className="text-xs font-semibold text-muted-foreground">Sécurité & Confidentialité</p>
+                      <p className="text-xs font-medium text-muted-foreground">Sécurité & Confidentialité</p>
                       <p className="text-[11px] text-muted-foreground/70 leading-relaxed">
                         Vos échanges sont privés et sécurisés. Les réponses sont générées exclusivement à partir de nos documents internes.
                       </p>
