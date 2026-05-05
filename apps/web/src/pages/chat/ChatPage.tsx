@@ -5,8 +5,10 @@ import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
 import { cn } from "@workspace/ui/lib/utils"
 import { BookOpen, Bot, History, LayoutDashboard, LogOut, Menu, MessageCircle, PlusCircle, Send, ShieldCheck, User, X, Zap } from "lucide-react"
-import { useMemo, useState } from "react"
+import { useMemo, useState, useRef } from "react"
 import { useNavigate, useParams } from "react-router-dom"
+import gsap from "gsap"
+import { useGSAP } from "@gsap/react"
 import { FeedbackModal } from "../../components/chat/FeedbackModal"
 import { MessageBubble } from "../../components/chat/MessageBubble"
 import { SourceCitation } from "../../components/chat/SourceCitation"
@@ -242,6 +244,44 @@ export function ChatPage() {
     return firstPart.charAt(0).toUpperCase() + firstPart.slice(1)
   }, [user])
 
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useGSAP(() => {
+    if (messages.length === 0 && !isLoading) {
+      const tl = gsap.timeline()
+      
+      tl.from(".gsap-hero", {
+        y: 30,
+        opacity: 0,
+        duration: 0.8,
+        ease: "power3.out"
+      })
+      .from(".gsap-expertise", {
+        y: 20,
+        opacity: 0,
+        duration: 0.5,
+        stagger: 0.1,
+        ease: "power2.out"
+      }, "-=0.4")
+      .from(".gsap-tips", {
+        y: 20,
+        opacity: 0,
+        duration: 0.5,
+        stagger: 0.1,
+        ease: "power2.out"
+      }, "-=0.3")
+
+      // Infinite float animation for bot icon
+      gsap.to(".gsap-bot-icon", {
+        y: -10,
+        duration: 2,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut"
+      })
+    }
+  }, { scope: containerRef, dependencies: [messages.length, isLoading] })
+
   return (
     <div className="flex h-screen bg-background font-sans text-foreground selection:bg-primary/20">
       <ChatSidebar
@@ -268,10 +308,10 @@ export function ChatPage() {
         <div className="flex-1 overflow-y-auto scroll-smooth" ref={scrollRef}>
           <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-4 pb-32 sm:p-6 sm:pb-36">
             {messages.length === 0 && !isLoading && (
-              <div className="flex flex-col space-y-12 py-8">
+              <div ref={containerRef} className="flex flex-col space-y-12 py-8">
                 {/* Hero section */}
-                <div className="text-center space-y-4 animate-in fade-in slide-in-from-bottom-6 duration-1000">
-                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/20 shadow-inner animate-float">
+                <div className="text-center space-y-4 gsap-hero">
+                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/20 shadow-inner gsap-bot-icon">
                     <Bot className="h-8 w-8" />
                   </div>
                   <h1 className="title-lg tracking-tight">
@@ -287,8 +327,7 @@ export function ChatPage() {
                   {EXPERTISE_CATEGORIES.map((cat, i) => (
                     <div 
                       key={i} 
-                      className="flex flex-col space-y-3 rounded-2xl border border-border bg-card p-5 shadow-sm animate-in fade-in zoom-in-95 duration-700 fill-mode-both"
-                      style={{ animationDelay: `${200 + i * 150}ms` }}
+                      className="flex flex-col space-y-3 rounded-2xl border border-border bg-card p-5 shadow-sm gsap-expertise"
                     >
                       <div className="flex items-center gap-2 font-semibold text-sm">
                         <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-muted">
@@ -312,8 +351,8 @@ export function ChatPage() {
                 </div>
 
                 {/* Proactive Tips & Privacy */}
-                <div className="flex flex-col sm:flex-row gap-4 animate-in fade-in slide-in-from-bottom-4 duration-1000 fill-mode-both delay-700">
-                  <div className="flex-1 flex items-start gap-3 rounded-xl bg-blue-50/50 dark:bg-blue-900/10 p-4 border border-blue-100/50 dark:border-blue-900/20 hover:shadow-md transition-shadow">
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="flex-1 flex items-start gap-3 rounded-xl bg-blue-50/50 dark:bg-blue-900/10 p-4 border border-blue-100/50 dark:border-blue-900/20 hover:shadow-md transition-shadow gsap-tips">
                     <Zap className="h-4 w-4 text-primary mt-0.5" />
                     <div className="space-y-1">
                       <p className="text-xs font-medium text-primary dark:text-primary">Conseil d'utilisation</p>
@@ -323,7 +362,7 @@ export function ChatPage() {
                     </div>
                   </div>
                   
-                  <div className="flex-1 flex items-start gap-3 rounded-xl bg-muted/30 p-4 border border-border/50 hover:shadow-md transition-shadow">
+                  <div className="flex-1 flex items-start gap-3 rounded-xl bg-muted/30 p-4 border border-border/50 hover:shadow-md transition-shadow gsap-tips">
                     <ShieldCheck className="h-4 w-4 text-muted-foreground mt-0.5" />
                     <div className="space-y-1">
                       <p className="text-xs font-medium text-muted-foreground">Sécurité & Confidentialité</p>

@@ -1,4 +1,7 @@
 import { AlertCircle, Bot, Clock, RotateCcw, ServerCrash, User, WifiOff } from "lucide-react"
+import { useRef } from "react"
+import gsap from "gsap"
+import { useGSAP } from "@gsap/react"
 import ReactMarkdown from "react-markdown"
 import type { ChatMessage } from "../../types"
 
@@ -45,12 +48,24 @@ export function MessageBubble({
   onRetry,
 }: MessageBubbleProps) {
   const isUser = role === "user"
+  const bubbleRef = useRef<HTMLDivElement>(null)
+
+  useGSAP(() => {
+    if (!isLoading) {
+      gsap.from(bubbleRef.current, {
+        y: 15,
+        opacity: 0,
+        duration: 0.5,
+        ease: "power2.out",
+      })
+    }
+  }, { scope: bubbleRef, dependencies: [isLoading] })
 
   if (isError) {
     const { icon: ErrorIcon, title, retryable } = ERROR_CONFIG[errorType]
 
     return (
-      <div className="flex w-full justify-start">
+      <div ref={bubbleRef} className="flex w-full justify-start">
         <div className="flex max-w-[85%] flex-row gap-4">
           {/* Avatar */}
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border bg-destructive/10 border-destructive/25 text-destructive">
@@ -84,7 +99,7 @@ export function MessageBubble({
   }
 
   return (
-    <div className={`flex w-full ${isUser ? "justify-end" : "justify-start"}`}>
+    <div ref={bubbleRef} className={`flex w-full ${isUser ? "justify-end" : "justify-start"}`}>
       <div className={`flex max-w-[85%] gap-4 ${isUser ? "flex-row-reverse" : "flex-row"}`}>
         {/* Avatar */}
         <div
