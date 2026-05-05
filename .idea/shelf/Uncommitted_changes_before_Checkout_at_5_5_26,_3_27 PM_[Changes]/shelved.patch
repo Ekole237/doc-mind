@@ -1,0 +1,80 @@
+Index: apps/web/src/components/admin/DashboardCharts.tsx
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import {\n  Bar,\n  BarChart,\n  Cell,\n  Pie,\n  PieChart,\n  ResponsiveContainer,\n  XAxis,\n  Tooltip,\n} from \"recharts\"\nimport { Card, CardContent, CardHeader, CardTitle } from \"@workspace/ui/components/card\"\nimport { ChartContainer, ChartTooltipContent } from \"@workspace/ui/components/chart\"\nimport { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from \"@workspace/ui/components/select\"\nimport { MoreHorizontal } from \"lucide-react\"\nimport { Button } from \"@workspace/ui/components/button\"\nimport type { DailyStat, DocumentDistribution } from \"@/types\"\n\n// --- Sales Overview Chart (Repurposed as Query Trends) ---\n\nconst salesConfig = {\n  queries: { label: \"Queries\", color: \"#7c3aed\" },\n}\n\nexport function QueryVolumeChart({ data }: { data: DailyStat[] }) {\n  return (\n    <Card className=\"border-none shadow-sm flex-1\">\n      <CardHeader className=\"flex flex-row items-center justify-between pb-2\">\n        <div>\n          <CardTitle className=\"text-base font-semibold\">Activity Overview</CardTitle>\n          <div className=\"mt-1\">\n            <span className=\"text-2xl font-bold\">{data.reduce((acc, curr) => acc + curr.count, 0)}</span>\n            <div className=\"flex items-center gap-2 mt-1\">\n              <span className=\"text-[10px] text-muted-foreground\">Total queries in period</span>\n            </div>\n          </div>\n        </div>\n        <div className=\"flex items-center gap-2\">\n          <Button variant=\"ghost\" size=\"icon\" className=\"h-8 w-8\">\n            <MoreHorizontal className=\"h-4 w-4\" />\n          </Button>\n        </div>\n      </CardHeader>\n      <CardContent>\n        <ChartContainer config={salesConfig} className=\"h-62.5 w-full\">\n          <BarChart data={data} margin={{ top: 20, right: 0, left: 0, bottom: 0 }}>\n            <XAxis \n              dataKey=\"date\" \n              axisLine={false} \n              tickLine={false} \n              tick={{ fontSize: 10, fill: \"#94a3b8\" }}\n              dy={10}\n              tickFormatter={(value) => new Date(value).toLocaleDateString(\"fr-FR\", { weekday: \"short\" })}\n            />\n            <Tooltip content={<ChartTooltipContent hideLabel />} />\n            <Bar dataKey=\"count\" fill=\"var(--color-queries)\" radius={[4, 4, 0, 0]} barSize={40} />\n          </BarChart>\n        </ChartContainer>\n      </CardContent>\n    </Card>\n  )\n}\n\n// --- Total Subscriber Chart (Repurposed as Daily Activity) ---\n\nexport function DailyActivityChart({ data }: { data: DailyStat[] }) {\n  const latestCount = data[data.length - 1]?.count ?? 0\n  const previousCount = data[data.length - 2]?.count ?? 0\n  const diff = latestCount - previousCount\n  const isPositive = diff >= 0\n\n  return (\n    <Card className=\"border-none shadow-sm w-87.5\">\n      <CardHeader className=\"flex flex-row items-center justify-between pb-2\">\n        <CardTitle className=\"text-base font-semibold\">Daily Queries</CardTitle>\n        <Select defaultValue=\"weekly\">\n          <SelectTrigger className=\"w-22.5 h-8 text-xs border-none bg-muted/50\">\n            <SelectValue />\n          </SelectTrigger>\n          <SelectContent>\n            <SelectItem value=\"weekly\">Weekly</SelectItem>\n          </SelectContent>\n        </Select>\n      </CardHeader>\n      <CardContent>\n        <div className=\"mb-4\">\n          <span className=\"text-2xl font-bold\">{latestCount}</span>\n          <div className=\"flex items-center gap-2 mt-1\">\n            <span className={`text-[10px] font-bold ${isPositive ? \"text-emerald-600 bg-emerald-50\" : \"text-rose-600 bg-rose-50\"} px-1.5 py-0.5 rounded-full`}>\n              {Math.abs(diff)} {isPositive ? \"↑\" : \"↓\"}\n            </span>\n            <span className=\"text-[10px] text-muted-foreground\">vs yesterday</span>\n          </div>\n        </div>\n        <ChartContainer config={{}} className=\"h-45 w-full\">\n          <BarChart data={data}>\n            <XAxis \n              dataKey=\"date\" \n              axisLine={false} \n              tickLine={false} \n              tick={{ fontSize: 10, fill: \"#94a3b8\" }}\n              dy={5}\n              tickFormatter={(value) => new Date(value).toLocaleDateString(\"fr-FR\", { weekday: \"narrow\" })}\n            />\n            <Tooltip cursor={false} content={<ChartTooltipContent hideLabel />} />\n            <Bar dataKey=\"count\" radius={[4, 4, 4, 4]} barSize={25}>\n              {data.map((_, index) => (\n                <Cell \n                  key={`cell-${index}`} \n                  fill={index === data.length - 1 ? \"#7c3aed\" : \"#f1f5f9\"} \n                />\n              ))}\n            </Bar>\n          </BarChart>\n        </ChartContainer>\n      </CardContent>\n    </Card>\n  )\n}\n\n// --- Sales Distribution Chart (Repurposed as Document Distribution) ---\n\nconst COLORS = [\"#7c3aed\", \"#22d3ee\", \"#f1f5f9\", \"#e2e8f0\"]\n\nexport function DocumentStatusDistributionChart({ data }: { data: DocumentDistribution[] }) {\n  return (\n    <Card className=\"border-none shadow-sm flex-1\">\n      <CardHeader className=\"flex flex-row items-center justify-between pb-2\">\n        <CardTitle className=\"text-base font-semibold\">Documents Distribution</CardTitle>\n      </CardHeader>\n      <CardContent>\n        <div className=\"flex justify-between items-start mb-4\">\n          {data.slice(0, 3).map((item, index) => (\n            <div key={item.name}>\n              <div className=\"flex items-center gap-1.5 mb-1\">\n                <div className=\"w-0.5 h-3\" style={{ backgroundColor: COLORS[index % COLORS.length] }} />\n                <span className=\"text-[10px] text-muted-foreground\">{item.name}</span>\n              </div>\n              <span className=\"text-lg font-bold\">{item.value}</span>\n            </div>\n          ))}\n        </div>\n        <div className=\"h-45 w-full relative\">\n          <ResponsiveContainer width=\"100%\" height=\"100%\">\n            <PieChart>\n              <Pie\n                data={data}\n                cx=\"50%\"\n                cy=\"100%\"\n                startAngle={180}\n                endAngle={0}\n                innerRadius={60}\n                outerRadius={100}\n                paddingAngle={0}\n                dataKey=\"value\"\n              >\n                {data.map((_, index) => (\n                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />\n                ))}\n              </Pie>\n            </PieChart>\n          </ResponsiveContainer>\n        </div>\n      </CardContent>\n    </Card>\n  )\n}\n
+===================================================================
+diff --git a/apps/web/src/components/admin/DashboardCharts.tsx b/apps/web/src/components/admin/DashboardCharts.tsx
+--- a/apps/web/src/components/admin/DashboardCharts.tsx	(revision a5d23505eb9b2035e1be3e6f2f86dd111fb1cc11)
++++ b/apps/web/src/components/admin/DashboardCharts.tsx	(date 1777985738216)
+@@ -23,14 +23,20 @@
+ 
+ export function QueryVolumeChart({ data }: { data: DailyStat[] }) {
+   return (
+-    <Card className="border-none shadow-sm flex-1">
++    <Card className="flex-1 border-none shadow-sm">
+       <CardHeader className="flex flex-row items-center justify-between pb-2">
+         <div>
+-          <CardTitle className="text-base font-semibold">Activity Overview</CardTitle>
++          <CardTitle className="text-base font-semibold">
++            Aperçu des activités
++          </CardTitle>
+           <div className="mt-1">
+-            <span className="text-2xl font-bold">{data.reduce((acc, curr) => acc + curr.count, 0)}</span>
+-            <div className="flex items-center gap-2 mt-1">
+-              <span className="text-[10px] text-muted-foreground">Total queries in period</span>
++            <span className="text-2xl font-bold">
++              {data.reduce((acc, curr) => acc + curr.count, 0)}
++            </span>
++            <div className="mt-1 flex items-center gap-2">
++              <span className="text-[10px] text-muted-foreground">
++                Total queries in period
++              </span>
+             </div>
+           </div>
+         </div>
+@@ -42,17 +48,29 @@
+       </CardHeader>
+       <CardContent>
+         <ChartContainer config={salesConfig} className="h-62.5 w-full">
+-          <BarChart data={data} margin={{ top: 20, right: 0, left: 0, bottom: 0 }}>
+-            <XAxis 
+-              dataKey="date" 
+-              axisLine={false} 
+-              tickLine={false} 
++          <BarChart
++            data={data}
++            margin={{ top: 20, right: 0, left: 0, bottom: 0 }}
++          >
++            <XAxis
++              dataKey="date"
++              axisLine={false}
++              tickLine={false}
+               tick={{ fontSize: 10, fill: "#94a3b8" }}
+               dy={10}
+-              tickFormatter={(value) => new Date(value).toLocaleDateString("fr-FR", { weekday: "short" })}
++              tickFormatter={(value) =>
++                new Date(value).toLocaleDateString("fr-FR", {
++                  weekday: "short",
++                })
++              }
+             />
+             <Tooltip content={<ChartTooltipContent hideLabel />} />
+-            <Bar dataKey="count" fill="var(--color-queries)" radius={[4, 4, 0, 0]} barSize={40} />
++            <Bar
++              dataKey="count"
++              fill="var(--color-queries)"
++              radius={[4, 4, 0, 0]}
++              barSize={40}
++            />
+           </BarChart>
+         </ChartContainer>
+       </CardContent>
+@@ -71,7 +89,7 @@
+   return (
+     <Card className="border-none shadow-sm w-87.5">
+       <CardHeader className="flex flex-row items-center justify-between pb-2">
+-        <CardTitle className="text-base font-semibold">Daily Queries</CardTitle>
++        <CardTitle className="text-base font-semibold">Recherches quotidiennes</CardTitle>
+         <Select defaultValue="weekly">
+           <SelectTrigger className="w-22.5 h-8 text-xs border-none bg-muted/50">
+             <SelectValue />

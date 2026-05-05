@@ -34,6 +34,8 @@ export interface SourceRef {
   lastModified: string;
   driveUrl: string;
   confidenceScore: number;
+  content?: string;
+  exactQuote?: string | null;
 }
 
 export interface ChatResponse {
@@ -57,7 +59,7 @@ export class QueryRagUseCase {
     @Inject(CHAT_SESSION_REPOSITORY)
     private readonly _chatSessionRepository: ChatSessionRepository,
     private readonly _configService: ConfigService,
-  ) {}
+  ) { }
 
   async execute(
     dto: QueryDto,
@@ -187,11 +189,13 @@ export class QueryRagUseCase {
       isIgnorance,
       source: sourceChunk
         ? {
-            documentName: sourceChunk.title,
-            lastModified: sourceChunk.lastModified.toISOString(),
-            driveUrl: sourceChunk.driveUrl ?? '',
-            confidenceScore: sourceChunk.confidenceScore,
-          }
+          documentName: sourceChunk.title,
+          lastModified: sourceChunk.lastModified.toISOString(),
+          driveUrl: sourceChunk.driveUrl ?? '',
+          confidenceScore: sourceChunk.confidenceScore,
+          content: sourceChunk.content,
+          exactQuote,
+        }
         : null,
       queryLogId: queryLog.id,
       responseTimeMs,
