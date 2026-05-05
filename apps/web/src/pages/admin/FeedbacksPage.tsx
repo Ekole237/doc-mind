@@ -4,9 +4,9 @@ import { Button } from "@workspace/ui/components/button"
 import { DataTable, DataTableColumnHeader } from "@workspace/ui/components/data-table"
 import { CheckCircle } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
-import { admin } from "../../api/client"
+import { admin } from "@/api/client.ts"
 import { AdminLayout } from "../../components/layout/AdminLayout"
-import type { AdminFeedback, ApiError } from "../../types"
+import type { AdminFeedback, ApiError } from "@/types"
 
 type StatusFilter = "all" | "PENDING" | "RESOLVED"
 
@@ -143,7 +143,10 @@ export function FeedbacksPage() {
   return (
     <AdminLayout currentPage="feedbacks">
       <div className="p-6">
-        <h1 className="mb-6 text-3xl font-bold">Signalements</h1>
+        <div className="flex flex-col mb-6">
+          <h1 className="text-3xl title-lg">Signalements</h1>
+          <span className="text-muted-foreground text-sm">Gérez et supervisez vos signalements.</span>
+        </div>
 
         {error && (
           <div className="mb-4 rounded-lg bg-destructive/10 p-4 text-destructive">{error}</div>

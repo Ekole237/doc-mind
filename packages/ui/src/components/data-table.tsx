@@ -331,7 +331,7 @@ export function DataTable<T extends { id?: string }>({
         style={{ maxHeight }}
       >
         <Table>
-          <TableHeader className="sticky top-0 z-10 bg-background">
+          <TableHeader className="sticky top-0 z-10 bg-primary/50 backdrop-blur text-primary-foreground">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="hover:bg-transparent">
                 {headerGroup.headers.map((header) => (
@@ -439,7 +439,7 @@ export function DataTable<T extends { id?: string }>({
                     return (
                       <div key={cell.id}>
                         <div className="font-medium text-foreground">
-                          {flexRender(cell.column.columnDef.header, cell.getContext())}
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
                         </div>
                         <div>
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}

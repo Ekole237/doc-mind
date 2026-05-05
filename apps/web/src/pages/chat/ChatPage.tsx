@@ -2,14 +2,15 @@ import EjaraLogo from "@/assets/icons/Logo.svg?react"
 import EjaraTextLogo from "@/assets/icons/ejara.svg?react"
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
+import { cn } from "@workspace/ui/lib/utils"
 import { BookOpen, Bot, History, LayoutDashboard, LogOut, Menu, MessageCircle, PlusCircle, Send, ShieldCheck, User, X, Zap } from "lucide-react"
 import { useMemo, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { FeedbackModal } from "../../components/chat/FeedbackModal"
 import { MessageBubble } from "../../components/chat/MessageBubble"
 import { SourceCitation } from "../../components/chat/SourceCitation"
-import { useAuth } from "../../hooks/useAuth"
-import type { ChatSession } from "../../types"
+import { useAuth } from "@/hooks/useAuth.ts"
+import type { ChatSession } from "@/types"
 import { useChat } from "./useChat"
 
 // --- PRESENTATIONAL COMPONENTS ---
@@ -74,8 +75,8 @@ function ChatSidebar({
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex h-14 items-center justify-between border-b border-border/50 px-4">
-          <div className="flex items-center gap-2 font-semibold">
+        <div className="flex h-14 items-center justify-between border-border/50 px-4">
+          <div className="flex items-center gap-2 w-full font-semibold border-2 border-gray-200 rounded-lg px-4 py-2">
             <Bot className="h-5 w-5 text-primary" />
             <div className="flex flex-col leading-tight">
               <span className="font-display">Doc Mind</span>
@@ -118,14 +119,15 @@ function ChatSidebar({
                 <Button
                   key={session.id}
                   variant={currentSessionId === session.id ? "secondary" : "ghost"}
-                  className="w-full justify-start gap-3 text-left font-normal cursor-pointer"
-                  onClick={() => {
+                  className={cn("w-full justify-start gap-3 text-left font-normal cursor-pointer hover:bg-primary/20 hover:text-foreground",
+                     currentSessionId === session.id ? "bg-primary/20" : "hover:bg-muted")
+                    }                  onClick={() => {
                     onSessionClick(session.id)
                     if (window.innerWidth < 768) onClose()
                   }}
                 >
                   <MessageCircle className="h-4 w-4 shrink-0" />
-                  <span className="truncate text-body">{session.title}</span>
+                  <span className="truncate ">{session.title}</span>
                 </Button>
               ))}
               {sessions.length === 0 && (
@@ -172,7 +174,7 @@ function ChatSidebar({
 
 function ChatHeader({ onMenuClick }: { onMenuClick: () => void }) {
   return (
-    <header className="sticky top-0 z-20 flex h-14 items-center gap-4 border-b border-border/50 bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-20 flex h-14 items-center gap-4 border-b border-border/50 bg-background/95 px-4 backdrop-blur supports-backdrop-filter:bg-background/60">
       <button
         className="md:hidden"
         onClick={onMenuClick}
@@ -358,7 +360,7 @@ export function ChatPage() {
         </div>
 
         {/* Input Area */}
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background via-background to-transparent pt-6 pb-4">
+        <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-background via-background to-transparent pt-6 pb-4">
           <div className="mx-auto w-full max-w-3xl px-4 sm:px-6">
             <form
               onSubmit={handleSubmit}
@@ -374,13 +376,13 @@ export function ChatPage() {
                   if (inputError) setInputError(null)
                 }}
                 disabled={isLoading || rateLimited}
-                className="min-h-[44px] border-0 bg-transparent px-4 py-3 shadow-none focus-visible:ring-0 resize-none flex-1"
+                className="min-h-11 border-0 bg-transparent px-4 py-3 shadow-none focus-visible:ring-0 resize-none flex-1"
                 autoFocus
                 maxLength={MAX_LENGTH}
                 autoComplete="off"
               />
               
-              <div className="flex h-[44px] items-center pr-2">
+              <div className="flex h-11 items-center pr-2">
                 <Button
                   type="submit"
                   size="icon"

@@ -5,9 +5,10 @@ import { DataTable, DataTableColumnHeader } from "@workspace/ui/components/data-
 import { Input } from "@workspace/ui/components/input"
 import { Eye, EyeOff, Plus, RefreshCw, Trash2, Zap } from "lucide-react"
 import { useEffect, useState } from "react"
-import { admin } from "../../api/client"
+import { admin } from "@/api/client.ts"
 import { AdminLayout } from "../../components/layout/AdminLayout"
-import type { AdminDocument, ApiError } from "../../types"
+import type { AdminDocument, ApiError } from "@/types"
+import { Card, CardContent, CardTitle } from "@workspace/ui/components/card"
 
 function statusBadge(status: AdminDocument["_status"]) {
   const map = {
@@ -134,7 +135,7 @@ function ConfirmModal({ title, description, onConfirm, onClose, loading }: Confi
 // ---- Main Page ----
 export function DocumentsPage() {
   const [documents, setDocuments] = useState<AdminDocument[]>([])
-  const [totalCount, setTotalCount] = useState(0)
+  const [_, setTotalCount] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState("")
   const [actionLoading, setActionLoading] = useState<string | null>(null)
@@ -348,7 +349,7 @@ export function DocumentsPage() {
   return (
     <AdminLayout currentPage="documents">
       {toast && (
-        <div className="fixed bottom-4 right-4 z-50 rounded-lg bg-foreground px-4 py-3 text-sm text-background shadow-lg">
+        <div className="fixed right-4 bottom-4 z-50 rounded-lg bg-foreground px-4 py-3 text-sm text-background shadow-lg">
           {toast}
         </div>
       )}
@@ -367,43 +368,58 @@ export function DocumentsPage() {
         />
       )}
 
-      <div className="p-6">
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-col gaps-2">
-            <h1 className="text-3xl font-bold">Documents</h1>
-            <span className="text-muted-foreground text-sm">Gérez et supervisez vos documents.</span>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" className="gap-2" onClick={() => setReindexConfirm(true)}>
-              <RefreshCw className="h-4 w-4" />
-              Réindexer tout
-            </Button>
-            <Button className="gap-2" onClick={() => setShowAddModal(true)}>
-              <Plus className="h-4 w-4" />
-              Ajouter
-            </Button>
-          </div>
+
+          <div className="p-6">
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+              <div className="gaps-2 mb-6 flex flex-col">
+                <h1 className="title-lg text-3xl">Documents</h1>
+                <span className="text-sm text-muted-foreground">
+                  Gérez et supervisez vos documents.
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="gap-2"
+                  onClick={() => setReindexConfirm(true)}
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Réindexer tout
+                </Button>
+                <Button className="gap-2" onClick={() => setShowAddModal(true)}>
+                  <Plus className="h-4 w-4" />
+                  Ajouter
+                </Button>
+              </div>
+            </div>
+
+            {error && (
+              <div className="mb-4 rounded-lg bg-destructive/10 p-4 text-destructive">
+                {error}
+              </div>
+            )}
+            <Card className="border-none shadow-sm">
+              <CardTitle>
+                <h1 className="title-lg text-3xl mb-4">Liste les documents</h1>
+              </CardTitle>
+              <CardContent>
+                <DataTable
+                  columns={columns}
+                  data={paginatedDocuments}
+                  totalCount={filteredDocuments.length}
+                  pagination={pagination}
+                  onPaginationChange={setPagination}
+                  isLoading={isLoading}
+                  withSearch
+                  searchValue={search}
+                  onSearchChange={setSearch}
+                  searchPlaceholder="Rechercher par titre, statut, confidentialité..."
+                  emptyMessage="Aucun document"
+                  withSelection
+                />
+              </CardContent>
+            </Card>
         </div>
-
-        {error && (
-          <div className="mb-4 rounded-lg bg-destructive/10 p-4 text-destructive">{error}</div>
-        )}
-
-        <DataTable
-          columns={columns}
-          data={paginatedDocuments}
-          totalCount={filteredDocuments.length}
-          pagination={pagination}
-          onPaginationChange={setPagination}
-          isLoading={isLoading}
-          withSearch
-          searchValue={search}
-          onSearchChange={setSearch}
-          searchPlaceholder="Rechercher par titre, statut, confidentialité..."
-          emptyMessage="Aucun document"
-          withSelection
-        />
-      </div>
     </AdminLayout>
   )
 }

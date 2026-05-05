@@ -1,33 +1,33 @@
+import { admin } from "@/api/client.ts"
+import type { AdminQueryLog, ApiError } from "@/types"
 import { Button } from "@workspace/ui/components/button"
-import { Checkbox } from "@workspace/ui/components/checkbox"
 import { Calendar as DateCalendar } from "@workspace/ui/components/calendar"
+import { Checkbox } from "@workspace/ui/components/checkbox"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu"
+import type { FlexiFilterTableRow } from "@workspace/ui/components/flexi-filter-table"
+import { FlexiFilterTable } from "@workspace/ui/components/flexi-filter-table"
 import { Popover, PopoverContent, PopoverTrigger } from "@workspace/ui/components/popover"
-import { 
-  X, 
-  Filter, 
+import {
+  AlertCircle,
+  Bot,
   CalendarDays,
   Check,
   ChevronDown,
-  User as UserIcon, 
-  AlertCircle, 
-  HelpCircle, 
+  Filter,
+  HelpCircle,
   MessageSquare,
   RefreshCw,
-  Bot
+  User as UserIcon,
+  X
 } from "lucide-react"
+import { useCallback, useEffect, useState } from "react"
 import ReactMarkdown from "react-markdown"
-import { useState, useEffect, useCallback } from "react"
-import { admin } from "@/api/client.ts"
 import { AdminLayout } from "../../components/layout/AdminLayout"
-import type { AdminQueryLog, ApiError } from "@/types"
-import { FlexiFilterTable } from "@workspace/ui/components/flexi-filter-table"
-import type { FlexiFilterTableRow } from "@workspace/ui/components/flexi-filter-table"
 
 const LIMIT = 15
 
@@ -146,11 +146,11 @@ function ConversationModal({ sessionId, onClose }: ConversationModalProps) {
                     <div className="max-w-none prose prose-sm dark:prose-invert">
                       <ReactMarkdown
                         components={{
-                          p: ({ children }) => <p className="mb-2 last:mb-0 leading-relaxed whitespace-pre-wrap break-words">{children}</p>,
+                          p: ({ children }) => <p className="mb-2 last:mb-0 leading-relaxed whitespace-pre-wrap wrap-break-word">{children}</p>,
                           ul: ({ children }) => <ul className="mb-2 ml-4 list-disc space-y-1">{children}</ul>,
                           ol: ({ children }) => <ol className="mb-2 ml-4 list-decimal space-y-1">{children}</ol>,
                           li: ({ children }) => <li className="marker:text-muted-foreground/60">{children}</li>,
-                          strong: ({ children }) => <strong className="font-bold">{children}</strong>,
+                          strong: ({ children }) => <strong className="font-bold text-primary">{children}</strong>,
                         }}
                       >
                         {log._answer}
@@ -290,7 +290,7 @@ export function LogsPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 w-[115px] justify-start px-2 text-[11px] font-medium sm:w-32 sm:text-xs"
+                      className="h-8 w-28.75 justify-start px-2 text-[11px] font-medium sm:w-32 sm:text-xs"
                     >
                       {from || "Début"}
                     </Button>
@@ -309,7 +309,7 @@ export function LogsPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 w-[115px] justify-start px-2 text-[11px] font-medium sm:w-32 sm:text-xs"
+                      className="h-8 w-28.75 justify-start px-2 text-[11px] font-medium sm:w-32 sm:text-xs"
                     >
                       {to || "Fin"}
                     </Button>

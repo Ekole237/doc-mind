@@ -90,6 +90,16 @@ export type DocumentStatus = "PENDING" | "INDEXED" | "DISABLED" | "ERROR"
 export type FeedbackStatus = "PENDING" | "RESOLVED"
 export type Confidentiality = "PUBLIC"
 
+export interface DailyStat {
+  date: string
+  count: number
+}
+
+export interface DocumentDistribution {
+  name: string
+  value: number
+}
+
 export interface DashboardMetrics {
   documentsIndexed: number
   documentsPending: number
@@ -98,6 +108,9 @@ export interface DashboardMetrics {
   totalUsers: number
   activeUsersMonth: number
   averageSessionsPerUser: number
+  queriesIgnoranceCount: number
+  dailyQueryStats: DailyStat[]
+  documentStatusDistribution: DocumentDistribution[]
 }
 
 export interface AdminDocument {

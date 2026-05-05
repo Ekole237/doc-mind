@@ -108,7 +108,15 @@ export function AdminLayout({ children, currentPage }: AdminLayoutProps) {
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-auto">{children}</main>
+        <main className="flex-1 overflow-auto">
+
+          <div className="p-8 bg-[#f8fafc] min-h-screen">
+            <div className="max-w-350 mx-auto space-y-6">
+              {children}
+            </div>
+          </div>
+        </main>
+
       </div>
 
       {/* Mobile Overlay */}
