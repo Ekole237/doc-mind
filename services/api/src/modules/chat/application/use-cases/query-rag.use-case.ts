@@ -45,6 +45,8 @@ export interface SourceRef {
   lastModified: string;
   driveUrl: string;
   confidenceScore: number;
+  content?: string;
+  exactQuote?: string | null;
 }
 
 export interface ChatResponse {
@@ -68,7 +70,7 @@ export class QueryRagUseCase {
     @Inject(CHAT_SESSION_REPOSITORY)
     private readonly _chatSessionRepository: ChatSessionRepository,
     private readonly _configService: ConfigService,
-  ) {}
+  ) { }
 
   async execute(
     dto: QueryDto,
@@ -161,9 +163,9 @@ export class QueryRagUseCase {
       isGuest,
       isIgnorance,
       chatSessionId,
-      primaryChunk?.documentId ?? null,
-      primaryChunk?.title ?? null,
-      primaryChunk?.driveUrl ?? null,
+      sourceChunk?.documentId ?? null,
+      sourceChunk?.title ?? null,
+      sourceChunk?.driveUrl ?? null,
       responseTimeMs,
     );
 
@@ -174,41 +176,19 @@ export class QueryRagUseCase {
       isIgnorance,
       source: sourceChunk
         ? {
-            documentName: sourceChunk.title,
-            lastModified: sourceChunk.lastModified.toISOString(),
-            driveUrl: sourceChunk.driveUrl ?? '',
-            confidenceScore: sourceChunk.confidenceScore,
-            content: sourceChunk.content,
-            exactQuote,
-          }
+          documentName: sourceChunk.title,
+          lastModified: sourceChunk.lastModified.toISOString(),
+          driveUrl: sourceChunk.driveUrl ?? '',
+          confidenceScore: sourceChunk.confidenceScore,
+          content: sourceChunk.content,
+          exactQuote,
+        }
         : null,
       queryLogId: queryLog.id,
       responseTimeMs,
       context_id: chatSessionId,
     };
   }
-}
-
-function isConversational(question: string): boolean {
-  const trimmed = question.trim();
-  return CONVERSATIONAL_PATTERNS.some((re) => re.test(trimmed));
-}
-
-export interface SourceRef {
-  documentName: string;
-  lastModified: string;
-  driveUrl: string;
-  confidenceScore: number;
-  content?: string;
-  exactQuote?: string | null;
-}
-
-export interface ChatResponse {
-  answer: string;
-  isIgnorance: boolean;
-  source: SourceRef | null;
-  queryLogId: string;
-  responseTimeMs: number;
 }
 
 function resolveSourceChunk(
