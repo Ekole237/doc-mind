@@ -5,6 +5,7 @@ export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/ap
  */
 export const ENDPOINTS = {
   login: '/auth/login',
+  updatePassword: '/auth/profile/password',
   activateGuest: (token: string) => `/auth/guest/activate?token=${token}`,
   requestMagicLink: 'auth/guest/magic-link',
   activateMagicLink: (token: string) => `/auth/guest/magic-link/activate?token=${token}`,

@@ -63,19 +63,19 @@ export function DashboardPage() {
       {/* Top Row: Metric Cards */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         <MetricCard
-          label="Queries (Month)"
+          label="Requêtes (mois)"
           value={metrics.queriesThisMonth.toLocaleString()}
           trend={{ value: 12.5, isPositive: true }}
           icon={<Eye className="h-4 w-4" />}
         />
         <MetricCard
-          label="Total Users"
+          label="Nombre total d'utilisateurs"
           value={metrics.totalUsers.toLocaleString()}
           trend={{ value: 5.2, isPositive: true }}
           icon={<Users className="h-4 w-4" />}
         />
         <MetricCard
-          label="Ignorance Rate"
+          label="Taux d'ignorance"
           value={`${ignoranceRate}%`}
           trend={{ value: 2.1, isPositive: false }}
           icon={<MessageSquareWarning className="h-4 w-4" />}
@@ -98,4 +98,3 @@ export function DashboardPage() {
     </AdminLayout>
   )
 }
-

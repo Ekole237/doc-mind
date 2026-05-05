@@ -3,15 +3,22 @@ import { ActiveMagicLinkDto } from '#auth/application/dto/active-magic-link.dto'
 import { LoginWithEmailAndPasswordDto } from '#auth/application/dto/login-with-email-and-password.dto';
 import { LoginWithProviderDto } from '#auth/application/dto/login-with-provider.dto';
 import { RequestMagicLinkDto } from '#auth/application/dto/request-magic-link.dto';
+import { UpdatePasswordDto } from '#auth/application/dto/update-password.dto';
 import { ActiveGuestTokenUseCase } from '#auth/application/use-cases/active-guest-token.use-case';
 import { ActivateMagicLinkUseCase } from '#auth/application/use-cases/active-magic-link.use-case';
 import { LoginWithEmailAndPasswordUseCase } from '#auth/application/use-cases/login-with-email-and-password.use-case';
 import { LoginWithProviderUseCase } from '#auth/application/use-cases/login-with-provider.use-case';
 import { RequestMagicLinkUseCase } from '#auth/application/use-cases/request-magic-link.use-case';
+import { UpdatePasswordUseCase } from '#auth/application/use-cases/update-password.use-case';
+import { Role } from '#auth/domain/enums/role';
 import {
   PROVIDER_SERVICE,
   type ProviderService,
 } from '#auth/domain/services/provider.service';
+import { JwtPayload } from '#auth/domain/services/token.service';
+import { Roles } from '#auth/presentation/decorators/roles.decorator';
+import { JwtGuard } from '#auth/presentation/guards/jwt.guard';
+import { RbacGuard } from '#auth/presentation/guards/rbac.guard';
 import {
   Body,
   Controller,
@@ -20,13 +27,16 @@ import {
   HttpStatus,
   Inject,
   Post,
+  Put,
   Query,
   Redirect,
+  Req,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Throttle } from '@nestjs/throttler';
-import { FastifyReply } from 'fastify';
+import { FastifyReply, FastifyRequest } from 'fastify';
 
 @Controller('auth')
 export class AuthController {
@@ -38,11 +48,25 @@ export class AuthController {
     private readonly _activeGuestTokenUseCase: ActiveGuestTokenUseCase,
     private readonly _requestMagicLinkUseCase: RequestMagicLinkUseCase,
     private readonly _activateMagicLinkUseCase: ActivateMagicLinkUseCase,
+    private readonly _updatePasswordUseCase: UpdatePasswordUseCase,
     @Inject(PROVIDER_SERVICE)
     private readonly _providerService: ProviderService,
     private readonly _configService: ConfigService,
   ) {
     this._frontendUrl = this._configService.getOrThrow<string>('FRONTEND_URL');
+  }
+
+  // ─── PROFILE ───────────────────────────────────────────────────────────────
+
+  @Put('profile/password')
+  @UseGuards(JwtGuard, RbacGuard)
+  @Roles(Role.ADMIN)
+  async updatePassword(
+    @Req() req: FastifyRequest & { user: JwtPayload },
+    @Body() dto: UpdatePasswordDto,
+  ) {
+    await this._updatePasswordUseCase.execute(req.user.sub, dto);
+    return { message: 'Mot de passe mis à jour avec succès' };
   }
 
   // ─── EMPLOYEE (ZOHO) ────────────────────────────────────────────────────────

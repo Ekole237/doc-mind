@@ -1,5 +1,6 @@
 import EjaraLogo from "@/assets/icons/Logo.svg?react"
 import EjaraTextLogo from "@/assets/icons/ejara.svg?react"
+import { Avatar, AvatarFallback } from "@workspace/ui/components/avatar"
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
 import { cn } from "@workspace/ui/lib/utils"
@@ -9,6 +10,7 @@ import { useNavigate, useParams } from "react-router-dom"
 import { FeedbackModal } from "../../components/chat/FeedbackModal"
 import { MessageBubble } from "../../components/chat/MessageBubble"
 import { SourceCitation } from "../../components/chat/SourceCitation"
+import { ProfileDrawer } from "../../components/layout/ProfileDrawer"
 import { useAuth } from "@/hooks/useAuth.ts"
 import type { ChatSession } from "@/types"
 import { useChat } from "./useChat"
@@ -172,22 +174,32 @@ function ChatSidebar({
   )
 }
 
-function ChatHeader({ onMenuClick }: { onMenuClick: () => void }) {
+function ChatHeader({ onMenuClick, onProfileClick, userEmail }: { onMenuClick: () => void; onProfileClick: () => void; userEmail?: string }) {
+  const initial = userEmail ? userEmail.charAt(0).toUpperCase() : "?"
+  
   return (
-    <header className="sticky top-0 z-20 flex h-14 items-center gap-4 border-b border-border/50 bg-background/95 px-4 backdrop-blur supports-backdrop-filter:bg-background/60">
-      <button
-        className="md:hidden"
-        onClick={onMenuClick}
-        aria-label="Ouvrir le menu"
-      >
-        <Menu className="h-5 w-5 text-muted-foreground" />
-      </button>
-      <div className="flex items-center justify-center gap-2">
-        <EjaraLogo width={51} height={51} fill="currentColor" />
-        <div className="pt-2">
-          <EjaraTextLogo fill="currentColor" />
+    <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-border/50 bg-background/95 px-4 backdrop-blur supports-backdrop-filter:bg-background/60">
+      <div className="flex items-center gap-4">
+        <button
+          className="md:hidden"
+          onClick={onMenuClick}
+          aria-label="Ouvrir le menu"
+        >
+          <Menu className="h-5 w-5 text-muted-foreground" />
+        </button>
+        <div className="flex items-center justify-center gap-2">
+          <EjaraLogo width={51} height={51} fill="currentColor" />
+          <div className="pt-2">
+            <EjaraTextLogo fill="currentColor" />
+          </div>
         </div>
       </div>
+
+      <button onClick={onProfileClick} className="transition-transform hover:scale-105 active:scale-95">
+        <Avatar size="default" className="border border-primary/20 bg-primary/10">
+          <AvatarFallback className="text-primary font-bold">{initial}</AvatarFallback>
+        </Avatar>
+      </button>
     </header>
   )
 }
@@ -199,6 +211,7 @@ export function ChatPage() {
   const navigate = useNavigate()
   const { id } = useParams()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [profileOpen, setProfileOpen] = useState(false)
   
   const {
     messages,
@@ -245,16 +258,20 @@ export function ChatPage() {
       />
 
       <main className="flex flex-1 flex-col overflow-hidden relative">
-        <ChatHeader onMenuClick={() => setSidebarOpen(true)} />
+        <ChatHeader 
+          onMenuClick={() => setSidebarOpen(true)} 
+          onProfileClick={() => setProfileOpen(true)}
+          userEmail={user?.email}
+        />
 
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto scroll-smooth" ref={scrollRef}>
           <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-4 pb-32 sm:p-6 sm:pb-36">
             {messages.length === 0 && !isLoading && (
-              <div className="flex flex-col space-y-12 py-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+              <div className="flex flex-col space-y-12 py-8">
                 {/* Hero section */}
-                <div className="text-center space-y-4">
-                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/20 shadow-inner">
+                <div className="text-center space-y-4 animate-in fade-in slide-in-from-bottom-6 duration-1000">
+                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary ring-1 ring-primary/20 shadow-inner animate-float">
                     <Bot className="h-8 w-8" />
                   </div>
                   <h1 className="title-lg tracking-tight">
@@ -268,7 +285,11 @@ export function ChatPage() {
                 {/* Expertise Pillars */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {EXPERTISE_CATEGORIES.map((cat, i) => (
-                    <div key={i} className="flex flex-col space-y-3 rounded-2xl border border-border bg-card p-5 shadow-sm">
+                    <div 
+                      key={i} 
+                      className="flex flex-col space-y-3 rounded-2xl border border-border bg-card p-5 shadow-sm animate-in fade-in zoom-in-95 duration-700 fill-mode-both"
+                      style={{ animationDelay: `${200 + i * 150}ms` }}
+                    >
                       <div className="flex items-center gap-2 font-semibold text-sm">
                         <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-muted">
                           {cat.icon}
@@ -280,7 +301,7 @@ export function ChatPage() {
                           <button
                             key={j}
                             onClick={() => sendMessage(q)}
-                            className="text-left text-xs text-muted-foreground hover:text-primary transition-colors line-clamp-1"
+                            className="text-left text-xs text-muted-foreground hover:text-primary transition-colors line-clamp-1 hover:translate-x-1 duration-200"
                           >
                             • {q}
                           </button>
@@ -291,8 +312,8 @@ export function ChatPage() {
                 </div>
 
                 {/* Proactive Tips & Privacy */}
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <div className="flex-1 flex items-start gap-3 rounded-xl bg-blue-50/50 dark:bg-blue-900/10 p-4 border border-blue-100/50 dark:border-blue-900/20">
+                <div className="flex flex-col sm:flex-row gap-4 animate-in fade-in slide-in-from-bottom-4 duration-1000 fill-mode-both delay-700">
+                  <div className="flex-1 flex items-start gap-3 rounded-xl bg-blue-50/50 dark:bg-blue-900/10 p-4 border border-blue-100/50 dark:border-blue-900/20 hover:shadow-md transition-shadow">
                     <Zap className="h-4 w-4 text-primary mt-0.5" />
                     <div className="space-y-1">
                       <p className="text-xs font-medium text-primary dark:text-primary">Conseil d'utilisation</p>
@@ -302,7 +323,7 @@ export function ChatPage() {
                     </div>
                   </div>
                   
-                  <div className="flex-1 flex items-start gap-3 rounded-xl bg-muted/30 p-4 border border-border/50">
+                  <div className="flex-1 flex items-start gap-3 rounded-xl bg-muted/30 p-4 border border-border/50 hover:shadow-md transition-shadow">
                     <ShieldCheck className="h-4 w-4 text-muted-foreground mt-0.5" />
                     <div className="space-y-1">
                       <p className="text-xs font-medium text-muted-foreground">Sécurité & Confidentialité</p>
@@ -364,7 +385,7 @@ export function ChatPage() {
           <div className="mx-auto w-full max-w-3xl px-4 sm:px-6">
             <form
               onSubmit={handleSubmit}
-              className={`relative flex items-end gap-2 rounded-2xl border bg-card p-1 shadow-sm transition-shadow focus-within:ring-1 focus-within:ring-ring ${
+              className={`relative flex items-end gap-2 rounded-2xl border bg-card p-1 shadow-sm transition-all duration-200 focus-within:ring-1 focus-within:ring-ring focus-within:shadow-md ${
                 inputError ? "border-destructive" : "border-input"
               }`}
             >
@@ -386,7 +407,7 @@ export function ChatPage() {
                 <Button
                   type="submit"
                   size="icon"
-                  className="h-8 w-8 shrink-0 rounded-xl"
+                  className="h-8 w-8 shrink-0 rounded-xl transition-transform hover:scale-110 active:scale-90 disabled:scale-100"
                   disabled={isLoading || rateLimited || !inputValue.trim()}
                 >
                   <Send className="h-4 w-4" />
@@ -417,6 +438,11 @@ export function ChatPage() {
         queryLogId={feedbackModal.queryLogId}
         onClose={() => setFeedbackModal({ isOpen: false, queryLogId: "" })}
         onSubmit={handleFeedback}
+      />
+
+      <ProfileDrawer 
+        isOpen={profileOpen}
+        onClose={() => setProfileOpen(false)}
       />
     </div>
   )

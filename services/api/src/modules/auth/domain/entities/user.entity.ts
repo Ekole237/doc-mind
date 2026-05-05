@@ -58,6 +58,17 @@ export class User {
     );
   }
 
+  updatePassword(password: Password): User {
+    return new User(
+      this.id,
+      this._email,
+      password,
+      this._role,
+      this._lastLogin,
+      this._createdAt,
+    );
+  }
+
   canLoginWithPassword(): boolean {
     return this._password !== null;
   }

@@ -3,6 +3,7 @@ import { ActivateMagicLinkUseCase } from '#auth/application/use-cases/active-mag
 import { LoginWithEmailAndPasswordUseCase } from '#auth/application/use-cases/login-with-email-and-password.use-case';
 import { LoginWithProviderUseCase } from '#auth/application/use-cases/login-with-provider.use-case';
 import { RequestMagicLinkUseCase } from '#auth/application/use-cases/request-magic-link.use-case';
+import { UpdatePasswordUseCase } from '#auth/application/use-cases/update-password.use-case';
 import { GUEST_TOKEN_REPOSITORY } from '#auth/domain/repositories/guest-token.repository';
 import { MAGIC_LINK_REPOSITORY } from '#auth/domain/repositories/magic-link.repository';
 import { USER_REPOSITORY } from '#auth/domain/repositories/user.repository';
@@ -20,7 +21,7 @@ import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { MailModule } from '../../core/mail/mail.module';
+import { MailModule } from '#shared/mail/mail.module';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { JwtStrategy } from './jwt.strategy';
 
@@ -43,6 +44,7 @@ import { JwtStrategy } from './jwt.strategy';
     LoginWithEmailAndPasswordUseCase,
     LoginWithProviderUseCase,
     RequestMagicLinkUseCase,
+    UpdatePasswordUseCase,
     JwtStrategy,
     { provide: USER_REPOSITORY, useClass: UserRepositoryImplementation },
     {

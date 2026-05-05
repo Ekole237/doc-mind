@@ -1,4 +1,5 @@
 import { Button } from "@workspace/ui/components/button"
+import { Avatar, AvatarFallback } from "@workspace/ui/components/avatar"
 import { Activity, ArrowLeft, FileText, LayoutDashboard, LogOut, Menu, MessageSquare, Users } from "lucide-react"
 import type { ReactNode } from "react"
 import { useState } from "react"
@@ -7,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth.ts"
 import { cn } from "@workspace/ui/lib/utils"
 import EjaraLogo from "@/assets/icons/Logo.svg?react"
 import EjaraTextLogo from "@/assets/icons/ejara.svg?react"
+import { ProfileDrawer } from "./ProfileDrawer"
 
 interface AdminLayoutProps {
   children: ReactNode
@@ -15,13 +17,16 @@ interface AdminLayoutProps {
 
 export function AdminLayout({ children, currentPage }: AdminLayoutProps) {
   const navigate = useNavigate()
-  const { logout } = useAuth()
+  const { logout, user } = useAuth()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [profileOpen, setProfileOpen] = useState(false)
+
+  const initial = user?.email ? user.email.charAt(0).toUpperCase() : "?"
 
   const navItems = [
     { id: "dashboard", label: "Tableau de bord", icon: LayoutDashboard, path: "/admin/dashboard" },
     { id: "documents", label: "Documents", icon: FileText, path: "/admin/documents" },
-    { id: "feedbacks", label: "Retours", icon: MessageSquare, path: "/admin/feedbacks" },
+    { id: "feedbacks", label: "Signalements", icon: MessageSquare, path: "/admin/feedbacks" },
     { id: "logs", label: "Logs", icon: Activity, path: "/admin/logs" },
     { id: "guests", label: "Invités", icon: Users, path: "/admin/guests" },
   ]
@@ -30,7 +35,7 @@ export function AdminLayout({ children, currentPage }: AdminLayoutProps) {
     <div className="flex h-screen bg-background">
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 w-54 bg-card shadow-md transition-transform md:static md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 w-64 bg-card shadow-md transition-transform md:static md:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -91,20 +96,28 @@ export function AdminLayout({ children, currentPage }: AdminLayoutProps) {
       {/* Main Content */}
       <div className="flex flex-1 flex-col overflow-hidden bg-black/10">
         {/* Header */}
-        <header className="flex items-center gap-4 border-b border-border bg-card px-4 py-3 md:gap-0">
-          <button
-            className="md:hidden"
-            onClick={() => setSidebarOpen(true)}
-            aria-label="Ouvrir le menu"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
-          <div className="flex items-center justify-center gap-2">
-            <EjaraLogo width={51} height={51} fill="currentColor" />
-            <div className="pt-2">
-              <EjaraTextLogo fill="currentColor" />
+        <header className="flex items-center justify-between border-b border-border bg-card px-4 py-3 md:gap-0">
+          <div className="flex items-center gap-4">
+            <button
+              className="md:hidden"
+              onClick={() => setSidebarOpen(true)}
+              aria-label="Ouvrir le menu"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+            <div className="flex items-center justify-center gap-2">
+              <EjaraLogo width={51} height={51} fill="currentColor" />
+              <div className="pt-2">
+                <EjaraTextLogo fill="currentColor" />
+              </div>
             </div>
           </div>
+
+          <button onClick={() => setProfileOpen(true)} className="transition-transform hover:scale-105 active:scale-95">
+            <Avatar size="default" className="border border-primary/20 bg-primary/10">
+              <AvatarFallback className="text-primary font-bold">{initial}</AvatarFallback>
+            </Avatar>
+          </button>
         </header>
 
         {/* Content */}
@@ -126,6 +139,11 @@ export function AdminLayout({ children, currentPage }: AdminLayoutProps) {
           onClick={() => setSidebarOpen(false)}
         />
       )}
+
+      <ProfileDrawer 
+        isOpen={profileOpen}
+        onClose={() => setProfileOpen(false)}
+      />
     </div>
   )
 }

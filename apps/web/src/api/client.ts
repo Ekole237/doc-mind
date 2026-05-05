@@ -1,6 +1,6 @@
 import type { AxiosInstance } from "axios"
 import axios, { AxiosError } from "axios"
-import type { ApiError } from "../types"
+import type { ApiError } from "@/types"
 import { getToken, removeToken } from "../utils/storage"
 import { API_URL, ENDPOINTS } from "./endpoints"
 
@@ -44,6 +44,19 @@ export async function login(email: string, password: string, _hp = ""): Promise<
     const response = await apiClient.post<string>(ENDPOINTS.login, { email, password, _hp }, {
       responseType: "text",
     })
+    return response.data
+  } catch (err) {
+    const axiosError = err as AxiosError<ApiError>
+    if (axiosError.response?.data) {
+      throw axiosError.response.data
+    }
+    throw { statusCode: 0, message: "Erreur réseau", code: "NETWORK_ERROR" } satisfies ApiError
+  }
+}
+
+export async function updatePassword(password: string): Promise<{ message: string }> {
+  try {
+    const response = await apiClient.put<{ message: string }>(ENDPOINTS.updatePassword, { password })
     return response.data
   } catch (err) {
     const axiosError = err as AxiosError<ApiError>
@@ -104,7 +117,7 @@ import type {
   ExtendGuestTokenResult,
   ChatSession,
   ChatMessage,
-} from "../types"
+} from "@/types"
 
 export const chat = {
   getSessions: (): Promise<ChatSession[]> =>

@@ -144,7 +144,7 @@ export function FeedbacksPage() {
     <AdminLayout currentPage="feedbacks">
       <div className="p-6">
         <div className="flex flex-col mb-6">
-          <h1 className="text-3xl title-lg">Signalements</h1>
+          <h1 className="text-3xl title-lg tracking-tighter">Signalements</h1>
           <span className="text-muted-foreground text-sm">Gérez et supervisez vos signalements.</span>
         </div>
 
