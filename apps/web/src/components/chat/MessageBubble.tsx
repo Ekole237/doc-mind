@@ -1,4 +1,5 @@
 import { AlertCircle, Bot, Clock, RotateCcw, ServerCrash, User, WifiOff } from "lucide-react"
+import ReactMarkdown from "react-markdown"
 import type { ChatMessage } from "../../types"
 
 interface MessageBubbleProps {
@@ -113,7 +114,19 @@ export function MessageBubble({
                 <span className="text-xs">Réflexion...</span>
               </div>
             ) : (
-              <p className="whitespace-pre-wrap break-words">{content}</p>
+              <div className="max-w-none">
+                <ReactMarkdown
+                  components={{
+                    p: ({ children }) => <p className="mb-2 last:mb-0 leading-relaxed whitespace-pre-wrap break-words">{children}</p>,
+                    ul: ({ children }) => <ul className="mb-2 ml-4 list-disc space-y-1">{children}</ul>,
+                    ol: ({ children }) => <ol className="mb-2 ml-4 list-decimal space-y-1">{children}</ol>,
+                    li: ({ children }) => <li className="marker:text-muted-foreground/60">{children}</li>,
+                    strong: ({ children }) => <strong className="font-bold">{children}</strong>,
+                  }}
+                >
+                  {content}
+                </ReactMarkdown>
+              </div>
             )}
           </div>
 

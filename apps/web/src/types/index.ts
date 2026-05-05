@@ -23,8 +23,6 @@ export interface ChatSource {
   lastModified: string
   driveUrl: string
   confidenceScore: number
-  content?: string
-  exactQuote?: string | null
 }
 
 export interface ChatResponse {
@@ -92,11 +90,27 @@ export type DocumentStatus = "PENDING" | "INDEXED" | "DISABLED" | "ERROR"
 export type FeedbackStatus = "PENDING" | "RESOLVED"
 export type Confidentiality = "PUBLIC"
 
+export interface DailyStat {
+  date: string
+  count: number
+}
+
+export interface DocumentDistribution {
+  name: string
+  value: number
+}
+
 export interface DashboardMetrics {
   documentsIndexed: number
   documentsPending: number
   feedbacksPending: number
   queriesThisMonth: number
+  totalUsers: number
+  activeUsersMonth: number
+  averageSessionsPerUser: number
+  queriesIgnoranceCount: number
+  dailyQueryStats: DailyStat[]
+  documentStatusDistribution: DocumentDistribution[]
 }
 
 export interface AdminDocument {
@@ -128,6 +142,7 @@ export interface AdminQueryLog {
   _isGuest: boolean
   _isIgnorance: boolean
   _isFlagged: boolean
+  _chatSessionId: string | null
   _sourceDocId: string | null
   _sourceDocName: string | null
   _sourceDriveUrl: string | null

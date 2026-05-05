@@ -18,6 +18,8 @@ const badgeVariants = cva(
           "border-transparent bg-[var(--warning-bg)]/10 text-[var(--warning-bg)] dark:text-[var(--warning-bg)]",
         success:
           "border-transparent bg-[var(--success-bg)]/10 text-[var(--success-bg)] dark:text-[var(--success-bg)]",
+        error:
+          "border-transparent bg-destructive/10 text-destructive dark:text-destructive",
       },
     },
     defaultVariants: {

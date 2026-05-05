@@ -1,11 +1,14 @@
+import type { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
+import { DataTable, DataTableColumnHeader } from "@workspace/ui/components/data-table"
 import { Input } from "@workspace/ui/components/input"
-import { Plus, RefreshCw, Trash2, Zap, EyeOff, Eye } from "lucide-react"
+import { Eye, EyeOff, Plus, RefreshCw, Trash2, Zap } from "lucide-react"
 import { useEffect, useState } from "react"
-import { admin } from "../../api/client"
+import { admin } from "@/api/client.ts"
 import { AdminLayout } from "../../components/layout/AdminLayout"
-import type { AdminDocument, ApiError } from "../../types"
+import type { AdminDocument, ApiError } from "@/types"
+import { Card, CardContent, CardTitle } from "@workspace/ui/components/card"
 
 function statusBadge(status: AdminDocument["_status"]) {
   const map = {
@@ -132,6 +135,7 @@ function ConfirmModal({ title, description, onConfirm, onClose, loading }: Confi
 // ---- Main Page ----
 export function DocumentsPage() {
   const [documents, setDocuments] = useState<AdminDocument[]>([])
+  const [_, setTotalCount] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState("")
   const [actionLoading, setActionLoading] = useState<string | null>(null)
@@ -139,6 +143,8 @@ export function DocumentsPage() {
   const [reindexConfirm, setReindexConfirm] = useState(false)
   const [reindexLoading, setReindexLoading] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
+  const [search, setSearch] = useState("")
+  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 })
 
   const showToast = (msg: string) => {
     setToast(msg)
@@ -148,7 +154,10 @@ export function DocumentsPage() {
   const load = () => {
     setIsLoading(true)
     admin.listDocuments()
-      .then(setDocuments)
+      .then((docs) => {
+        setDocuments(docs)
+        setTotalCount(docs.length)
+      })
       .catch((err) => setError(getApiMessage(err, "Erreur lors du chargement")))
       .finally(() => setIsLoading(false))
   }
@@ -219,10 +228,128 @@ export function DocumentsPage() {
     }
   }
 
+  // Transformer les documents pour ajouter le champ id
+  const documentsWithId = documents.map(doc => ({ ...doc, id: doc._id }))
+
+  // Filtrer les documents localement selon la recherche
+  const filteredDocuments = documentsWithId.filter(doc =>
+    search === "" ||
+    doc._title.toLowerCase().includes(search.toLowerCase()) ||
+    doc._confidentiality.toLowerCase().includes(search.toLowerCase()) ||
+    doc._status.toLowerCase().includes(search.toLowerCase())
+  )
+
+  // Paginer localement pour l'instant
+  const paginatedDocuments = filteredDocuments.slice(
+    pagination.pageIndex * pagination.pageSize,
+    (pagination.pageIndex + 1) * pagination.pageSize
+  )
+
+  // Colonnes du tableau
+  const columns: ColumnDef<AdminDocument & { id: string }>[] = [
+    {
+      accessorKey: "_title",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Titre" />
+      ),
+      cell: (info) => (
+        <div className="max-w-xs truncate font-medium">{info.getValue() as string}</div>
+      ),
+    },
+    {
+      accessorKey: "_status",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Statut" />
+      ),
+      cell: (info) => statusBadge(info.getValue() as AdminDocument["_status"]),
+    },
+    {
+      accessorKey: "_confidentiality",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Confidentialité" />
+      ),
+      cell: (info) => (
+        <span className="text-xs text-muted-foreground">{info.getValue() as string}</span>
+      ),
+    },
+    {
+      accessorKey: "_chunkCount",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Chunks" />
+      ),
+      cell: (info) => (
+        <span className="text-xs text-muted-foreground">{info.getValue() as number}</span>
+      ),
+    },
+    {
+      accessorKey: "_lastModified",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Modifié" />
+      ),
+      cell: (info) => (
+        <span className="text-xs text-muted-foreground">
+          {new Date(info.getValue() as string).toLocaleDateString("fr-FR")}
+        </span>
+      ),
+    },
+    {
+      id: "actions",
+      header: "Actions",
+      cell: (info) => {
+        const doc = info.row.original
+        return (
+          <div className="flex gap-1">
+            {(doc._status === "PENDING" || doc._status === "ERROR") && (
+              <Button
+                size="sm" variant="outline"
+                title="Indexer"
+                disabled={actionLoading === doc._id}
+                onClick={() => handleIndex(doc._id)}
+              >
+                <Zap className="h-4 w-4" />
+              </Button>
+            )}
+            {doc._status === "INDEXED" && (
+              <Button
+                size="sm" variant="outline"
+                title="Désactiver"
+                disabled={actionLoading === doc._id}
+                onClick={() => handleDisable(doc._id)}
+              >
+                <EyeOff className="h-4 w-4" />
+              </Button>
+            )}
+            {doc._status === "DISABLED" && (
+              <Button
+                size="sm" variant="outline"
+                title="Réactiver"
+                disabled={actionLoading === doc._id}
+                onClick={() => handleEnable(doc._id)}
+              >
+                <Eye className="h-4 w-4" />
+              </Button>
+            )}
+            {(doc._status === "INDEXED" || doc._status === "DISABLED") && (
+              <Button
+                size="sm" variant="outline"
+                title="Supprimer"
+                disabled={actionLoading === doc._id}
+                onClick={() => handleDelete(doc._id)}
+              >
+                <Trash2 className="h-4 w-4 text-destructive" />
+              </Button>
+            )}
+          </div>
+        )
+      },
+      enableSorting: false,
+    },
+  ]
+
   return (
     <AdminLayout currentPage="documents">
       {toast && (
-        <div className="fixed bottom-4 right-4 z-50 rounded-lg bg-foreground px-4 py-3 text-sm text-background shadow-lg">
+        <div className="fixed right-4 bottom-4 z-50 rounded-lg bg-foreground px-4 py-3 text-sm text-background shadow-lg">
           {toast}
         </div>
       )}
@@ -241,111 +368,58 @@ export function DocumentsPage() {
         />
       )}
 
-      <div className="p-6">
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-          <h1 className="text-3xl font-bold">Documents</h1>
-          <div className="flex gap-2">
-            <Button variant="outline" className="gap-2" onClick={() => setReindexConfirm(true)}>
-              <RefreshCw className="h-4 w-4" />
-              Réindexer tout
-            </Button>
-            <Button className="gap-2" onClick={() => setShowAddModal(true)}>
-              <Plus className="h-4 w-4" />
-              Ajouter
-            </Button>
-          </div>
+
+          <div className="p-6">
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+              <div className="gaps-2 mb-6 flex flex-col">
+                <h1 className="title-lg text-3xl">Documents</h1>
+                <span className="text-sm text-muted-foreground">
+                  Gérez et supervisez vos documents.
+                </span>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="gap-2"
+                  onClick={() => setReindexConfirm(true)}
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Réindexer tout
+                </Button>
+                <Button className="gap-2" onClick={() => setShowAddModal(true)}>
+                  <Plus className="h-4 w-4" />
+                  Ajouter
+                </Button>
+              </div>
+            </div>
+
+            {error && (
+              <div className="mb-4 rounded-lg bg-destructive/10 p-4 text-destructive">
+                {error}
+              </div>
+            )}
+            <Card className="border-none shadow-sm">
+              <CardTitle>
+                <h1 className="title-lg text-3xl mb-4">Liste les documents</h1>
+              </CardTitle>
+              <CardContent>
+                <DataTable
+                  columns={columns}
+                  data={paginatedDocuments}
+                  totalCount={filteredDocuments.length}
+                  pagination={pagination}
+                  onPaginationChange={setPagination}
+                  isLoading={isLoading}
+                  withSearch
+                  searchValue={search}
+                  onSearchChange={setSearch}
+                  searchPlaceholder="Rechercher par titre, statut, confidentialité..."
+                  emptyMessage="Aucun document"
+                  withSelection
+                />
+              </CardContent>
+            </Card>
         </div>
-
-        {error && (
-          <div className="mb-4 rounded-lg bg-destructive/10 p-4 text-destructive">{error}</div>
-        )}
-
-        {isLoading && (
-          <div className="space-y-2">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-12 animate-pulse rounded bg-muted" />
-            ))}
-          </div>
-        )}
-
-        {!isLoading && documents.length === 0 && (
-          <div className="text-center text-muted-foreground">Aucun document</div>
-        )}
-
-        {!isLoading && documents.length > 0 && (
-          <div className="overflow-x-auto rounded-lg border border-border">
-            <table className="w-full text-sm">
-              <thead className="border-b border-border bg-muted">
-                <tr>
-                  <th className="px-4 py-3 text-left">Titre</th>
-                  <th className="px-4 py-3 text-left">Statut</th>
-                  <th className="px-4 py-3 text-left">Confidentialité</th>
-                  <th className="px-4 py-3 text-left">Chunks</th>
-                  <th className="px-4 py-3 text-left">Modifié</th>
-                  <th className="px-4 py-3 text-left">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {documents.map((doc) => (
-                  <tr key={doc._id} className="border-b border-border hover:bg-muted/50">
-                    <td className="px-4 py-3 font-medium max-w-xs truncate">{doc._title}</td>
-                    <td className="px-4 py-3">{statusBadge(doc._status)}</td>
-                    <td className="px-4 py-3 text-xs text-muted-foreground">{doc._confidentiality}</td>
-                    <td className="px-4 py-3 text-xs text-muted-foreground">{doc._chunkCount}</td>
-                    <td className="px-4 py-3 text-xs text-muted-foreground">
-                      {new Date(doc._lastModified).toLocaleDateString("fr-FR")}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex gap-1">
-                        {(doc._status === "PENDING" || doc._status === "ERROR") && (
-                          <Button
-                            size="sm" variant="outline"
-                            title="Indexer"
-                            disabled={actionLoading === doc._id}
-                            onClick={() => handleIndex(doc._id)}
-                          >
-                            <Zap className="h-4 w-4" />
-                          </Button>
-                        )}
-                        {doc._status === "INDEXED" && (
-                          <Button
-                            size="sm" variant="outline"
-                            title="Désactiver"
-                            disabled={actionLoading === doc._id}
-                            onClick={() => handleDisable(doc._id)}
-                          >
-                            <EyeOff className="h-4 w-4" />
-                          </Button>
-                        )}
-                        {doc._status === "DISABLED" && (
-                          <Button
-                            size="sm" variant="outline"
-                            title="Réactiver"
-                            disabled={actionLoading === doc._id}
-                            onClick={() => handleEnable(doc._id)}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        )}
-                        {(doc._status === "INDEXED" || doc._status === "DISABLED") && (
-                          <Button
-                            size="sm" variant="outline"
-                            title="Supprimer"
-                            disabled={actionLoading === doc._id}
-                            onClick={() => handleDelete(doc._id)}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
     </AdminLayout>
   )
 }

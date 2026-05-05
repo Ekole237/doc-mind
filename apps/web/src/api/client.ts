@@ -184,12 +184,16 @@ export const admin = {
     to?: string
     role?: string
     flagged?: boolean
+    ignorance?: boolean
     page?: number
     limit?: number
   }): Promise<AdminQueryLog[]> =>
     apiClient
       .get<AdminQueryLog[]>(ENDPOINTS.admin.logs, { params: filters })
       .then((r) => (Array.isArray(r.data) ? r.data : [])),
+
+  getSessionLogs: (id: string): Promise<AdminQueryLog[]> =>
+    apiClient.get<AdminQueryLog[]>(ENDPOINTS.admin.sessionLogs(id)).then((r) => r.data),
 
   // Guests
   listGuests: (

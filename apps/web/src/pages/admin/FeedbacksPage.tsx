@@ -1,14 +1,17 @@
+import type { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
+import { DataTable, DataTableColumnHeader } from "@workspace/ui/components/data-table"
 import { CheckCircle } from "lucide-react"
-import { useEffect, useState } from "react"
-import { admin } from "../../api/client"
+import { useEffect, useMemo, useState } from "react"
+import { admin } from "@/api/client.ts"
 import { AdminLayout } from "../../components/layout/AdminLayout"
-import type { AdminFeedback, ApiError } from "../../types"
+import type { AdminFeedback, ApiError } from "@/types"
 
 type StatusFilter = "all" | "PENDING" | "RESOLVED"
 
 const LIMIT = 10
+type FeedbackRow = AdminFeedback & { _title: string }
 
 function getApiMessage(err: unknown, fallback: string): string {
   const e = err as { response?: { data?: ApiError } }
@@ -20,32 +23,35 @@ export function FeedbacksPage() {
   const [total, setTotal] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState("")
-  const [page, setPage] = useState(1)
+  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: LIMIT })
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("PENDING")
   const [actionLoading, setActionLoading] = useState<string | null>(null)
-
-  const totalPages = Math.max(1, Math.ceil(total / LIMIT))
 
   useEffect(() => {
     setIsLoading(true)
     setError("")
     admin
-      .listFeedbacks(statusFilter, page)
+      .listFeedbacks(statusFilter, pagination.pageIndex + 1)
       .then((data) => {
         setFeedbacks(data.feedbacks ?? [])
         setTotal(data.total ?? 0)
       })
       .catch((err) => setError(getApiMessage(err, "Erreur lors du chargement")))
       .finally(() => setIsLoading(false))
-  }, [page, statusFilter])
+  }, [pagination.pageIndex, statusFilter])
 
   const handleResolve = async (id: string) => {
     setActionLoading(id)
     try {
       await admin.resolveFeedback(id)
-      setFeedbacks((prev) =>
-        prev.map((f) => (f.id === id ? { ...f, status: "RESOLVED" as const } : f))
-      )
+      if (statusFilter === "PENDING") {
+        setFeedbacks((prev) => prev.filter((f) => f.id !== id))
+        setTotal((prev) => Math.max(0, prev - 1))
+      } else {
+        setFeedbacks((prev) =>
+          prev.map((f) => (f.id === id ? { ...f, status: "RESOLVED" as const } : f))
+        )
+      }
     } catch (err) {
       setError(getApiMessage(err, "Erreur lors de la résolution"))
     } finally {
@@ -59,10 +65,88 @@ export function FeedbacksPage() {
     { id: "all", label: "Tous" },
   ]
 
+  const feedbackRows = useMemo<FeedbackRow[]>(
+    () =>
+      feedbacks.map((fb) => ({
+        ...fb,
+        _title: fb.comment?.trim() || `Signalement ${fb.id.slice(0, 8)}`,
+      })),
+    [feedbacks]
+  )
+
+  const columns: ColumnDef<FeedbackRow>[] = [
+    {
+      accessorKey: "createdAt",
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Date" />,
+      cell: (info) => (
+        <span className="text-xs whitespace-nowrap text-muted-foreground">
+          {new Date(info.getValue() as string).toLocaleDateString("fr-FR")}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "comment",
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Commentaire" />,
+      cell: (info) => (
+        <span className="line-clamp-2 text-xs">
+          {(info.getValue() as string | null) ?? (
+            <em className="text-muted-foreground">—</em>
+          )}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "queryLogId",
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Log ID" />,
+      cell: (info) => {
+        const queryLogId = info.getValue() as string
+        return <span className="font-mono text-xs text-muted-foreground">{queryLogId.slice(0, 8)}…</span>
+      },
+    },
+    {
+      accessorKey: "status",
+      header: ({ column }) => <DataTableColumnHeader column={column} title="Statut" />,
+      cell: (info) => {
+        const status = info.getValue() as AdminFeedback["status"]
+        return (
+          <Badge variant={status === "PENDING" ? "pending" : "success"}>
+            {status === "PENDING" ? "En attente" : "Résolu"}
+          </Badge>
+        )
+      },
+    },
+    {
+      id: "action",
+      header: "Action",
+      enableSorting: false,
+      cell: (info) => {
+        const feedback = info.row.original
+        if (feedback.status !== "PENDING") {
+          return <span className="text-xs text-muted-foreground">—</span>
+        }
+
+        return (
+          <Button
+            size="sm"
+            className="gap-1"
+            disabled={actionLoading === feedback.id}
+            onClick={() => void handleResolve(feedback.id)}
+          >
+            <CheckCircle className="h-3.5 w-3.5" />
+            Résoudre
+          </Button>
+        )
+      },
+    },
+  ]
+
   return (
     <AdminLayout currentPage="feedbacks">
       <div className="p-6">
-        <h1 className="mb-6 text-3xl font-bold">Signalements</h1>
+        <div className="flex flex-col mb-6">
+          <h1 className="text-3xl title-lg">Signalements</h1>
+          <span className="text-muted-foreground text-sm">Gérez et supervisez vos signalements.</span>
+        </div>
 
         {error && (
           <div className="mb-4 rounded-lg bg-destructive/10 p-4 text-destructive">{error}</div>
@@ -73,7 +157,10 @@ export function FeedbacksPage() {
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => { setStatusFilter(tab.id); setPage(1) }}
+              onClick={() => {
+                setStatusFilter(tab.id)
+                setPagination((prev) => ({ ...prev, pageIndex: 0 }))
+              }}
               className={`rounded-t px-4 py-2 text-sm font-medium transition-colors ${
                 statusFilter === tab.id
                   ? "border-b-2 border-primary text-primary"
@@ -84,89 +171,15 @@ export function FeedbacksPage() {
             </button>
           ))}
         </div>
-
-        {isLoading && (
-          <div className="space-y-2">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-20 animate-pulse rounded bg-muted" />
-            ))}
-          </div>
-        )}
-
-        {!isLoading && feedbacks.length === 0 && (
-          <div className="text-center text-muted-foreground">Aucun signalement</div>
-        )}
-
-        {!isLoading && feedbacks.length > 0 && (
-          <>
-            <div className="overflow-x-auto rounded-lg border border-border">
-              <table className="w-full text-sm">
-                <thead className="border-b border-border bg-muted">
-                  <tr>
-                    <th className="px-4 py-3 text-left">Date</th>
-                    <th className="px-4 py-3 text-left">Commentaire</th>
-                    <th className="px-4 py-3 text-left">Log ID</th>
-                    <th className="px-4 py-3 text-left">Statut</th>
-                    <th className="px-4 py-3 text-left">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {feedbacks.map((fb) => (
-                    <tr key={fb.id} className="border-b border-border hover:bg-muted/50">
-                      <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
-                        {new Date(fb.createdAt).toLocaleDateString("fr-FR")}
-                      </td>
-                      <td className="px-4 py-3 max-w-xs">
-                        <span className="line-clamp-2 text-xs">{fb.comment ?? <em className="text-muted-foreground">—</em>}</span>
-                      </td>
-                      <td className="px-4 py-3 text-xs text-muted-foreground font-mono">
-                        {fb.queryLogId.slice(0, 8)}…
-                      </td>
-                      <td className="px-4 py-3">
-                        <Badge variant={fb.status === "PENDING" ? "pending" : "success"}>
-                          {fb.status === "PENDING" ? "En attente" : "Résolu"}
-                        </Badge>
-                      </td>
-                      <td className="px-4 py-3">
-                        {fb.status === "PENDING" && (
-                          <Button
-                            size="sm"
-                            className="gap-1"
-                            disabled={actionLoading === fb.id}
-                            onClick={() => handleResolve(fb.id)}
-                          >
-                            <CheckCircle className="h-3.5 w-3.5" />
-                            Résoudre
-                          </Button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="mt-4 flex items-center justify-between">
-              <Button
-                variant="outline"
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-              >
-                Précédent
-              </Button>
-              <span className="text-sm text-muted-foreground">
-                Page {page} sur {totalPages} — {total} au total
-              </span>
-              <Button
-                variant="outline"
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page >= totalPages}
-              >
-                Suivant
-              </Button>
-            </div>
-          </>
-        )}
+        <DataTable
+          columns={columns}
+          data={feedbackRows}
+          totalCount={total}
+          pagination={pagination}
+          onPaginationChange={setPagination}
+          isLoading={isLoading}
+          emptyMessage="Aucun signalement"
+        />
       </div>
     </AdminLayout>
   )

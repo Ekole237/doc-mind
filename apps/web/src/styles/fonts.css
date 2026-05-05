@@ -8,7 +8,7 @@
 
 @font-face {
   font-family: 'Aeonik';
-  src: url('../../assets/fonts/Aeonik-Regular.otf') format('opentype');
+  src: url('../../assets/fonts/Aeonik-Regular.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -16,15 +16,39 @@
 
 @font-face {
   font-family: 'Aeonik';
-  src: url('../../assets/fonts/Aeonik-Medium.otf') format('opentype');
+  src: url('../../assets/fonts/Aeonik-Medium.ttf') format('truetype');
   font-weight: 500;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
+  font-family: 'Aeonik';
+  src: url('../../assets/fonts/Aeonik-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Aeonik';
+  src: url('../../assets/fonts/Aeonik-RegularItalic.ttf') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Aeonik';
+  src: url('../../assets/fonts/Aeonik-MediumItalic.ttf') format('truetype');
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
   font-family: 'Rebond Grotesque';
-  src: url('../../assets/fonts/RebondGrotesque-Bold.otf') format('opentype');
+  src: url('../../assets/fonts/ESRebondGrotesqueTRIAL-Bold-BF66189040400df.otf') format('opentype');
   font-weight: 700;
   font-style: normal;
   font-display: swap;

@@ -17,7 +17,8 @@
     "prettier": "^3.8.1",
     "prettier-plugin-tailwindcss": "^0.7.2",
     "turbo": "^2.8.17",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vite-plugin-svgr": "^5.2.0"
   },
   "packageManager": "npm@11.6.2",
   "engines": {
@@ -27,5 +28,8 @@
     "apps/*",
     "services/*",
     "packages/*"
-  ]
+  ],
+  "dependencies": {
+    "@tanstack/react-table": "^8.21.3"
+  }
 }

@@ -9,6 +9,7 @@ import {
 import {
   LLM_SERVICE,
   type LlmService,
+  ChatMessage,
 } from '#chat/domain/services/llm.service';
 import {
   VECTOR_SEARCH_SERVICE,
@@ -26,19 +27,7 @@ import { NotFoundException } from '@nestjs/common';
 const IGNORANCE_RESPONSE =
   "Je n'ai pas trouvé d'information sur ce sujet dans la base documentaire RH.";
 const TOP_K = 5;
-
-const CONVERSATIONAL_PATTERNS = [
-  /^(bonjour|bonsoir|salut|coucou|hello|hi|hey)\b/i,
-  /^(merci|thank you|thanks)\b/i,
-  /^(au revoir|bye|à bientôt|bonne journée|bonne soirée)\b/i,
-  /^comment (ça va|vas-tu|allez-vous|tu vas)\b/i,
-  /^(ça va|comment ça)\b/i,
-];
-
-function isConversational(question: string): boolean {
-  const trimmed = question.trim();
-  return CONVERSATIONAL_PATTERNS.some((re) => re.test(trimmed));
-}
+const HISTORY_LIMIT = 10;
 
 export interface SourceRef {
   documentName: string;
@@ -86,12 +75,23 @@ export class QueryRagUseCase {
     );
 
     let chatSessionId = dto.context_id;
+    let history: ChatMessage[] = [];
 
     if (chatSessionId) {
       const session = await this._chatSessionRepository.findById(chatSessionId);
       if (!session || session.userIdHash !== userIdHash) {
         throw new NotFoundException('Session not found');
       }
+
+      const historyLogs = await this._queryLogRepository.findBySessionId(
+        chatSessionId,
+        HISTORY_LIMIT,
+      );
+
+      history = historyLogs.flatMap((log) => [
+        { role: 'user', content: log.question },
+        { role: 'assistant', content: log.answer },
+      ]);
     } else {
       const title =
         dto.question.substring(0, 40) + (dto.question.length > 40 ? '...' : '');
@@ -100,9 +100,18 @@ export class QueryRagUseCase {
       chatSessionId = newSession.id;
     }
 
-    if (isConversational(dto.question)) {
+    // Rewrite question if there is history
+    const searchQuery =
+      history.length > 0
+        ? await this._llmService.condenseQuestion(history, dto.question)
+        : dto.question;
+
+    const intent = await this._llmService.classifyIntent(searchQuery);
+
+    if (intent === 'CHAT') {
       const answer = await this._llmService.completeConversational(
         dto.question,
+        history,
       );
       const responseTimeMs = Date.now() - start;
       const queryLog = QueryLogEntity.create(
@@ -130,7 +139,7 @@ export class QueryRagUseCase {
     }
 
     const chunks = await this._vectorSearchService.searchChunks(
-      dto.question,
+      searchQuery,
       roleLevel,
       TOP_K,
       threshold,
@@ -143,7 +152,11 @@ export class QueryRagUseCase {
     let exactQuote: string | null = null;
 
     if (!isIgnorance) {
-      const response = await this._llmService.complete(chunks, dto.question);
+      const response = await this._llmService.complete(
+        chunks,
+        dto.question,
+        history,
+      );
       answerText = response.answer;
       sourceChunk = resolveSourceChunk(
         chunks,

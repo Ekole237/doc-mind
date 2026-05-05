@@ -21,6 +21,20 @@ export class QueryLogRepositoryImplementation implements QueryLogRepository {
     return raw ? QueryLogMapper.toDomain(raw) : null;
   }
 
+  async findBySessionId(
+    sessionId: string,
+    limit?: number,
+  ): Promise<QueryLogEntity[]> {
+    const raws = await this._prismaService.queryLog.findMany({
+      where: { chatSessionId: sessionId },
+      orderBy: { timestamp: 'desc' },
+      take: limit,
+    });
+
+    // Reverse to get chronological order (asc)
+    return raws.reverse().map((raw) => QueryLogMapper.toDomain(raw));
+  }
+
   async findByUserHash(
     userHash: string,
     page: number,

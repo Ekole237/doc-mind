@@ -1,7 +1,7 @@
 import type { ReactNode } from "react"
 import { Navigate } from "react-router-dom"
 import { useAuth } from "../hooks/useAuth"
-import type { JwtUser } from "../types"
+import type { JwtUser } from "@/types"
 
 interface ProtectedRouteProps {
   children: ReactNode

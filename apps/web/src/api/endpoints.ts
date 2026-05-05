@@ -25,6 +25,7 @@ export const ENDPOINTS = {
     feedbacksById: (id: string) => `/admin/feedbacks/${id}`,
     feedbacksByIdResolve: (id: string) => `/admin/feedbacks/${id}/resolve`,
     logs: '/admin/logs',
+    sessionLogs: (id: string) => `/admin/logs/session/${id}`,
     guests: '/admin/guests',
     guestsById: (id: string) => `/admin/guests/${id}`,
     guestsByIdDelete: (id: string) => `/admin/guests/${id}`,
