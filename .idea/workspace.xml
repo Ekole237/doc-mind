@@ -4,12 +4,21 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ef08cf71-ca6f-4bbe-93c4-bff7039455ab" name="Changes" comment="feat: implement custom Avatar and Drawer components, enhance admin layout, and add profile management&#10;&#10;- Added `Avatar` and `Drawer` components with Radix primitives for modular UI.&#10;- Enhanced `AdminLayout` with a profile management drawer.&#10;- Introduced `ProfileDrawer` for updating passwords and viewing user details.&#10;- Improved localization and updated numerous labels, tooltips, and UI texts.&#10;- Implemented backend use case for password updates with validation logic.">
-      <change beforePath="$PROJECT_DIR$/apps/web/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/package.json" afterDir="false" />
+    <list default="true" id="ef08cf71-ca6f-4bbe-93c4-bff7039455ab" name="Changes" comment="feat(chat): add GSAP animations to enhance MessageBubble and ChatPage UI&#10;&#10;- Integrated GSAP and `@gsap/react` for interactive animations.&#10;- Added message bubble animations on loading and error states.&#10;- Introduced hero section animations and proactive tips float effect in ChatPage.&#10;- Updated dependencies to include GSAP and `@gsap/react`.">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/src/api/client.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/src/api/client.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/src/api/endpoints.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/src/api/endpoints.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/apps/web/src/components/chat/MessageBubble.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/src/components/chat/MessageBubble.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/web/src/pages/chat/ChatPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/src/pages/chat/ChatPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/src/contexts/AuthContext.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/src/contexts/AuthContext.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/src/pages/auth/ActivateGuestPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/src/pages/auth/ActivateGuestPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/src/pages/auth/CallbackPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/src/pages/auth/CallbackPage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/apps/web/src/utils/storage.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/src/utils/storage.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/packages/ui/src/styles/globals.css" beforeDir="false" afterPath="$PROJECT_DIR$/packages/ui/src/styles/globals.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/api/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/services/api/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/api/src/main.ts" beforeDir="false" afterPath="$PROJECT_DIR$/services/api/src/main.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/api/src/modules/admin/presentation/controllers/admin.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/services/api/src/modules/admin/presentation/controllers/admin.controller.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/api/src/modules/auth/jwt.strategy.ts" beforeDir="false" afterPath="$PROJECT_DIR$/services/api/src/modules/auth/jwt.strategy.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/services/api/src/modules/auth/presentation/controllers/auth.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/services/api/src/modules/auth/presentation/controllers/auth.controller.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -99,34 +108,34 @@
     <option name="openDirectoriesWithSingleClick" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.MCP Project settings loaded": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "dart.analysis.tool.window.visible": "false",
-    "git-widget-placeholder": "main",
-    "javascript.preferred.runtime.type.id": "node",
-    "junie.onboarding.icon.badge.shown": "true",
-    "last_opened_file_path": "/home/ekodev/Work/workspace/assitant-agent/doc-mind/apps/web/assets/fonts",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "prettierjs.PrettierConfiguration.Package": "/home/ekodev/Work/workspace/assitant-agent/doc-mind/node_modules/prettier",
-    "settings.editor.selected.configurable": "reference.settingsdialog.IDE.editor.colors.com.intellij.openapi.options.colors.pages.GeneralColorsPage",
-    "show.migrate.to.gradle.popup": "false",
-    "to.speed.mode.migration.done": "true",
-    "ts.external.directory.path": "/home/ekodev/Work/workspace/assitant-agent/doc-mind/node_modules/typescript/lib",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
+    &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;javascript.preferred.runtime.type.id&quot;: &quot;node&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/ekodev/Work/workspace/assitant-agent/doc-mind/apps/web/assets/fonts&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;prettierjs.PrettierConfiguration.Package&quot;: &quot;/home/ekodev/Work/workspace/assitant-agent/doc-mind/node_modules/prettier&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.IDE.editor.colors.com.intellij.openapi.options.colors.pages.GeneralColorsPage&quot;,
+    &quot;show.migrate.to.gradle.popup&quot;: &quot;false&quot;,
+    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;/home/ekodev/Work/workspace/assitant-agent/doc-mind/node_modules/typescript/lib&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/apps/web/assets/fonts" />
@@ -162,7 +171,9 @@
       <workItem from="1777965961406" duration="335000" />
       <workItem from="1777966359323" duration="2372000" />
       <workItem from="1777968876595" duration="10863000" />
-      <workItem from="1777984565380" duration="8843000" />
+      <workItem from="1777984565380" duration="10516000" />
+      <workItem from="1778030746714" duration="17000" />
+      <workItem from="1778055428735" duration="7172000" />
     </task>
     <task id="LOCAL-00001" summary="chore: add IDE config files, update fonts, and refine global styles formatting&#10;&#10;- Introduced new `.idea` config files for project-specific settings.  &#10;- Updated font assets and standardized typography tokens across the project.&#10;- Enhanced LogsPage for improved structure and markdown rendering.  &#10;- Refined global styles and component variants for error handling and improved UX.">
       <option name="closed" value="true" />
@@ -188,7 +199,15 @@
       <option name="project" value="LOCAL" />
       <updated>1777993599236</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="feat(chat): add GSAP animations to enhance MessageBubble and ChatPage UI&#10;&#10;- Integrated GSAP and `@gsap/react` for interactive animations.&#10;- Added message bubble animations on loading and error states.&#10;- Introduced hero section animations and proactive tips float effect in ChatPage.&#10;- Updated dependencies to include GSAP and `@gsap/react`.">
+      <option name="closed" value="true" />
+      <created>1777994475614</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1777994475614</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -210,6 +229,7 @@
     <MESSAGE value="chore: add IDE config files, update fonts, and refine global styles formatting&#10;&#10;- Introduced new `.idea` config files for project-specific settings.  &#10;- Updated font assets and standardized typography tokens across the project.&#10;- Enhanced LogsPage for improved structure and markdown rendering.  &#10;- Refined global styles and component variants for error handling and improved UX." />
     <MESSAGE value="feat(admin): implement dynamic admin dashboard components and enhance UI&#10;&#10;- Introduced reusable chart components (`ChartContainer`, `ChartTooltipContent`, etc.) for admin dashboard.&#10;- Implemented new charts: `QueryVolumeChart`, `DailyActivityChart`, and `DocumentStatusDistributionChart` for usage metrics.&#10;- Added `InteractivePieChart` for interactive data visualization.&#10;- Created `RecentFeedbacksTable` to display admin feedback with improved UI semantics.&#10;- Developed a new `Select` component for enhanced dropdown functionality." />
     <MESSAGE value="feat: implement custom Avatar and Drawer components, enhance admin layout, and add profile management&#10;&#10;- Added `Avatar` and `Drawer` components with Radix primitives for modular UI.&#10;- Enhanced `AdminLayout` with a profile management drawer.&#10;- Introduced `ProfileDrawer` for updating passwords and viewing user details.&#10;- Improved localization and updated numerous labels, tooltips, and UI texts.&#10;- Implemented backend use case for password updates with validation logic." />
-    <option name="LAST_COMMIT_MESSAGE" value="feat: implement custom Avatar and Drawer components, enhance admin layout, and add profile management&#10;&#10;- Added `Avatar` and `Drawer` components with Radix primitives for modular UI.&#10;- Enhanced `AdminLayout` with a profile management drawer.&#10;- Introduced `ProfileDrawer` for updating passwords and viewing user details.&#10;- Improved localization and updated numerous labels, tooltips, and UI texts.&#10;- Implemented backend use case for password updates with validation logic." />
+    <MESSAGE value="feat(chat): add GSAP animations to enhance MessageBubble and ChatPage UI&#10;&#10;- Integrated GSAP and `@gsap/react` for interactive animations.&#10;- Added message bubble animations on loading and error states.&#10;- Introduced hero section animations and proactive tips float effect in ChatPage.&#10;- Updated dependencies to include GSAP and `@gsap/react`." />
+    <option name="LAST_COMMIT_MESSAGE" value="feat(chat): add GSAP animations to enhance MessageBubble and ChatPage UI&#10;&#10;- Integrated GSAP and `@gsap/react` for interactive animations.&#10;- Added message bubble animations on loading and error states.&#10;- Introduced hero section animations and proactive tips float effect in ChatPage.&#10;- Updated dependencies to include GSAP and `@gsap/react`." />
   </component>
 </project>

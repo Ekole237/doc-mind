@@ -1,7 +1,7 @@
 import { useEffect } from "react"
 import { useNavigate, useSearchParams } from "react-router-dom"
 import { activateGuest, activateMagicLink } from "../../api/client"
-import { saveToken } from "../../utils/storage"
+import { saveUser } from "../../utils/storage"
 
 export function ActivateGuestPage() {
   const [searchParams] = useSearchParams()
@@ -18,8 +18,8 @@ export function ActivateGuestPage() {
     const activateApi = isMagicLink ? activateMagicLink : activateGuest
 
     activateApi(token)
-      .then((data) => {
-        saveToken(data.access_token)
+      .then((user) => {
+        saveUser(user)
         navigate("/chat", { replace: true })
         // Force un re-render contextuel si AuthContext utilise un event listener ou rechargement local
         window.location.reload()

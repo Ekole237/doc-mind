@@ -1,21 +1,15 @@
 import { useEffect } from "react"
-import { useNavigate, useSearchParams } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import { useAuth } from "../../hooks/useAuth"
 
 export function CallbackPage() {
-  const [searchParams] = useSearchParams()
   const { handleOAuthCallback } = useAuth()
   const navigate = useNavigate()
 
   useEffect(() => {
-    const token = searchParams.get("token")
-
-    if (!token) {
+    void handleOAuthCallback().catch(() => {
       navigate("/login?error=server", { replace: true })
-      return
-    }
-
-    handleOAuthCallback(token)
+    })
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (

@@ -41,12 +41,53 @@ import {
 } from '@nestjs/common';
 import { MultipartValue } from '@fastify/multipart';
 import { FastifyRequest } from 'fastify';
+import { Throttle } from '@nestjs/throttler';
 import { FeedbackStatus } from 'src/core/domain/enums/feedback-status';
 
 @Controller('admin')
 @UseGuards(JwtGuard, RbacGuard)
 @Roles(Role.ADMIN)
 export class AdminController {
+  private static readonly ALLOWED_UPLOAD_MIME_TYPES = new Set([
+    'application/pdf',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/msword',
+    'text/plain',
+  ]);
+
+  private static readonly ALLOWED_UPLOAD_EXTENSIONS = new Set([
+    '.pdf',
+    '.docx',
+    '.doc',
+    '.txt',
+  ]);
+
+  private _parsePositiveInt(value: string | undefined, field: string, defaultValue: number): number {
+    if (!value) return defaultValue;
+    const parsed = Number.parseInt(value, 10);
+    if (!Number.isFinite(parsed) || parsed < 1) {
+      throw new BadRequestException(`Le paramètre ${field} doit être un entier positif.`);
+    }
+    return parsed;
+  }
+
+  private _parseIsoDate(value: string | undefined, field: string): Date | undefined {
+    if (!value) return undefined;
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      throw new BadRequestException(`Le paramètre ${field} doit être une date ISO valide.`);
+    }
+    return date;
+  }
+
+  private _parseBoolean(value: string | undefined, field: string): boolean | undefined {
+    if (value === undefined) return undefined;
+    if (value !== 'true' && value !== 'false') {
+      throw new BadRequestException(`Le paramètre ${field} doit valoir "true" ou "false".`);
+    }
+    return value === 'true';
+  }
+
   constructor(
     private readonly _dashboardUseCase: DashboardUseCase,
     private readonly _listAllDocumentsUseCase: ListAllDocumentsUseCase,
@@ -79,6 +120,7 @@ export class AdminController {
 
   @Post('documents')
   @HttpCode(HttpStatus.CREATED)
+  @Throttle({ default: { ttl: 60 * 1000, limit: 8 } })
   async importDocument(@Request() req: FastifyRequest) {
     const data = await req.file();
 
@@ -92,6 +134,21 @@ export class AdminController {
 
     if (!title) {
       throw new BadRequestException('Le champ title est requis.');
+    }
+
+    const fileExtension =
+      data.filename.lastIndexOf('.') >= 0
+        ? data.filename.slice(data.filename.lastIndexOf('.')).toLowerCase()
+        : '';
+
+    // Sécurité: contrôle strict MIME + extension pour limiter les fichiers inattendus.
+    if (
+      !AdminController.ALLOWED_UPLOAD_MIME_TYPES.has(data.mimetype) ||
+      !AdminController.ALLOWED_UPLOAD_EXTENSIONS.has(fileExtension)
+    ) {
+      throw new BadRequestException(
+        'Type de fichier non autorisé. Formats acceptés: .pdf, .docx, .doc, .txt.',
+      );
     }
 
     if (
@@ -180,6 +237,7 @@ export class AdminController {
   }
 
   @Get('logs')
+  @Throttle({ default: { ttl: 60 * 1000, limit: 20 } })
   async listLogs(
     @Query('from') from?: string,
     @Query('to') to?: string,
@@ -189,14 +247,20 @@ export class AdminController {
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
+    const pageValue = this._parsePositiveInt(page, 'page', 1);
+    const limitValue = this._parsePositiveInt(limit, 'limit', 10);
+    if (limitValue > 100) {
+      throw new BadRequestException('Le paramètre limit ne peut pas dépasser 100.');
+    }
+
     return await this._listQueryLogsUseCase.execute({
-      from: from ? new Date(from) : undefined,
-      to: to ? new Date(to) : undefined,
+      from: this._parseIsoDate(from, 'from'),
+      to: this._parseIsoDate(to, 'to'),
       role,
-      flagged: flagged !== undefined ? flagged === 'true' : undefined,
-      ignorance: ignorance !== undefined ? ignorance === 'true' : undefined,
-      page: page ? parseInt(page, 10) : 1,
-      limit: limit ? parseInt(limit, 10) : 10,
+      flagged: this._parseBoolean(flagged, 'flagged'),
+      ignorance: this._parseBoolean(ignorance, 'ignorance'),
+      page: pageValue,
+      limit: limitValue,
     });
   }
 
@@ -207,6 +271,7 @@ export class AdminController {
 
   @Post('reindex')
   @HttpCode(HttpStatus.ACCEPTED)
+  @Throttle({ default: { ttl: 10 * 60 * 1000, limit: 2 } })
   async reindex(@Body() body: { confirm: boolean }) {
     if (!body.confirm) {
       return {

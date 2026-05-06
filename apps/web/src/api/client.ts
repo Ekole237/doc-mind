@@ -1,7 +1,6 @@
 import type { AxiosInstance } from "axios"
 import axios, { AxiosError } from "axios"
-import type { ApiError } from "@/types"
-import { getToken, removeToken } from "../utils/storage"
+import type { ApiError, JwtUser } from "@/types"
 import { API_URL, ENDPOINTS } from "./endpoints"
 
 
@@ -9,42 +8,30 @@ export const API_BASE_URL = API_URL
 
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_URL,
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },
 })
-
-// Request interceptor: inject JWT
-apiClient.interceptors.request.use(
-  (config) => {
-    const token = getToken()
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
-    return config
-  },
-  (error) => Promise.reject(error)
-)
 
 // Response interceptor: 401 → logout
 apiClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
     if (error.response?.status === 401) {
-      removeToken()
       window.dispatchEvent(new CustomEvent('auth:expired'))
     }
     return Promise.reject(error)
   }
 )
 
-// Login — le backend retourne un JWT brut (string)
-export async function login(email: string, password: string, _hp = ""): Promise<string> {
+export async function login(email: string, password: string, _hp = ""): Promise<JwtUser> {
   try {
-    const response = await apiClient.post<string>(ENDPOINTS.login, { email, password, _hp }, {
-      responseType: "text",
-    })
-    return response.data
+    const response = await apiClient.post<{ user: JwtUser | null }>(ENDPOINTS.login, { email, password, _hp })
+    if (!response.data.user) {
+      throw { statusCode: 500, message: "Session invalide", code: "INVALID_SESSION" } satisfies ApiError
+    }
+    return response.data.user
   } catch (err) {
     const axiosError = err as AxiosError<ApiError>
     if (axiosError.response?.data) {
@@ -52,6 +39,23 @@ export async function login(email: string, password: string, _hp = ""): Promise<
     }
     throw { statusCode: 0, message: "Erreur réseau", code: "NETWORK_ERROR" } satisfies ApiError
   }
+}
+
+export async function getSession(): Promise<JwtUser> {
+  try {
+    const response = await apiClient.get<{ user: JwtUser }>(ENDPOINTS.session)
+    return response.data.user
+  } catch (err) {
+    const axiosError = err as AxiosError<ApiError>
+    if (axiosError.response?.data) {
+      throw axiosError.response.data
+    }
+    throw { statusCode: 0, message: "Erreur réseau", code: "NETWORK_ERROR" } satisfies ApiError
+  }
+}
+
+export async function logoutSession(): Promise<void> {
+  await apiClient.post(ENDPOINTS.logout)
 }
 
 export async function updatePassword(password: string): Promise<{ message: string }> {
@@ -67,10 +71,13 @@ export async function updatePassword(password: string): Promise<{ message: strin
   }
 }
 
-export async function activateGuest(token: string): Promise<{ access_token: string }> {
+export async function activateGuest(token: string): Promise<JwtUser> {
   try {
-    const response = await apiClient.get<{ access_token: string }>(ENDPOINTS.activateGuest(token))
-    return response.data
+    const response = await apiClient.get<{ user: JwtUser | null }>(ENDPOINTS.activateGuest(token))
+    if (!response.data.user) {
+      throw { statusCode: 500, message: "Session invalide", code: "INVALID_SESSION" } satisfies ApiError
+    }
+    return response.data.user
   } catch (err) {
     const axiosError = err as AxiosError<ApiError>
     if (axiosError.response?.data) {
@@ -93,10 +100,13 @@ export async function requestMagicLink(email: string, _hp = ""): Promise<{ messa
   }
 }
 
-export async function activateMagicLink(token: string): Promise<{ access_token: string }> {
+export async function activateMagicLink(token: string): Promise<JwtUser> {
   try {
-    const response = await apiClient.get<{ access_token: string }>(ENDPOINTS.activateMagicLink(token))
-    return response.data
+    const response = await apiClient.get<{ user: JwtUser | null }>(ENDPOINTS.activateMagicLink(token))
+    if (!response.data.user) {
+      throw { statusCode: 500, message: "Session invalide", code: "INVALID_SESSION" } satisfies ApiError
+    }
+    return response.data.user
   } catch (err) {
     const axiosError = err as AxiosError<ApiError>
     if (axiosError.response?.data) {

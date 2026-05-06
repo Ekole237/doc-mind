@@ -1,41 +1,28 @@
 import type { JwtUser } from "../types"
 
-const TOKEN_KEY = "auth_token"
+const USER_KEY = "auth_user"
 
-export function saveToken(token: string): void {
-  localStorage.setItem(TOKEN_KEY, token)
-}
-
-export function getToken(): string | null {
-  return localStorage.getItem(TOKEN_KEY)
-}
-
-export function removeToken(): void {
-  localStorage.removeItem(TOKEN_KEY)
+// Sécurité: on ne stocke plus le JWT côté navigateur (cookie HttpOnly côté serveur).
+export function saveUser(user: JwtUser): void {
+  sessionStorage.setItem(USER_KEY, JSON.stringify(user))
 }
 
 export function getUser(): JwtUser | null {
-  const token = getToken()
-  if (!token) return null
+  const raw = sessionStorage.getItem(USER_KEY)
+  if (!raw) return null
 
   try {
-    const payload = token.split(".")[1]
-    const decoded = JSON.parse(atob(payload)) as JwtUser & { exp: number }
-    return decoded
+    return JSON.parse(raw) as JwtUser
   } catch {
+    sessionStorage.removeItem(USER_KEY)
     return null
   }
 }
 
-export function isAuthenticated(): boolean {
-  const token = getToken()
-  if (!token) return false
+export function removeUser(): void {
+  sessionStorage.removeItem(USER_KEY)
+}
 
-  try {
-    const payload = token.split(".")[1]
-    const decoded = JSON.parse(atob(payload)) as { exp: number }
-    return decoded.exp > Date.now() / 1000
-  } catch {
-    return false
-  }
+export function isAuthenticated(): boolean {
+  return getUser() !== null
 }

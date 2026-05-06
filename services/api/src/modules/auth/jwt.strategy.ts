@@ -3,12 +3,22 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { FastifyRequest } from 'fastify';
+
+const cookieExtractor = (req: FastifyRequest): string | null => {
+  const token = req.cookies?.access_token;
+  return typeof token === 'string' && token.length > 0 ? token : null;
+};
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(config: ConfigService) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      // Sécurité: on supporte cookie HttpOnly (prioritaire) et Bearer pour compat API.
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        cookieExtractor,
+        ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ]),
       ignoreExpiration: false,
       secretOrKey: config.get<string>('JWT_SECRET')!,
     });
