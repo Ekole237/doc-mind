@@ -4,14 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ef08cf71-ca6f-4bbe-93c4-bff7039455ab" name="Changes" comment="fix(auth): prevent false session expiration event during initial session probe&#10;&#10;- Updated API client to exclude `/auth/session` probe requests from triggering unauthorized session expiration events.">
-      <change beforePath="$PROJECT_DIR$/.codex" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/GEMINI.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/web/vercel.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/render.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/vercel.json" beforeDir="false" />
-    </list>
+    <list default="true" id="ef08cf71-ca6f-4bbe-93c4-bff7039455ab" name="Changes" comment="chore: remove unused configuration and documentation files&#10;&#10;- Deleted `GEMINI.md`, `render.yaml`, `vercel.json`, and related config files.&#10;- Cleaned up project to streamline unused assets and improve maintainability." />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -185,7 +178,7 @@
       <workItem from="1777968876595" duration="10863000" />
       <workItem from="1777984565380" duration="10516000" />
       <workItem from="1778030746714" duration="17000" />
-      <workItem from="1778055428735" duration="11238000" />
+      <workItem from="1778055428735" duration="11594000" />
     </task>
     <task id="LOCAL-00001" summary="chore: add IDE config files, update fonts, and refine global styles formatting&#10;&#10;- Introduced new `.idea` config files for project-specific settings.  &#10;- Updated font assets and standardized typography tokens across the project.&#10;- Enhanced LogsPage for improved structure and markdown rendering.  &#10;- Refined global styles and component variants for error handling and improved UX.">
       <option name="closed" value="true" />
@@ -235,7 +228,15 @@
       <option name="project" value="LOCAL" />
       <updated>1778065581756</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="chore: remove unused configuration and documentation files&#10;&#10;- Deleted `GEMINI.md`, `render.yaml`, `vercel.json`, and related config files.&#10;- Cleaned up project to streamline unused assets and improve maintainability.">
+      <option name="closed" value="true" />
+      <created>1778069219430</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1778069219431</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -260,6 +261,7 @@
     <MESSAGE value="feat(chat): add GSAP animations to enhance MessageBubble and ChatPage UI&#10;&#10;- Integrated GSAP and `@gsap/react` for interactive animations.&#10;- Added message bubble animations on loading and error states.&#10;- Introduced hero section animations and proactive tips float effect in ChatPage.&#10;- Updated dependencies to include GSAP and `@gsap/react`." />
     <MESSAGE value="feat(auth): enhance authentication flow with session management via cookies&#10;&#10;- Replaced localStorage session management with HttpOnly cookies for increased security.&#10;- Implemented new `/auth/session` and `/auth/logout` endpoints for session synchronization.&#10;- Updated API client to handle session-based user retrieval and logout actions.&#10;- Modified frontend authentication logic to use session cookies and save user data in `sessionStorage`.&#10;- Enhanced backend to set and clear access cookies securely.&#10;- Added Helmet and updated CORS configuration for improved security.&#10;- Refined error handling and improved user state synchronization across the application." />
     <MESSAGE value="fix(auth): prevent false session expiration event during initial session probe&#10;&#10;- Updated API client to exclude `/auth/session` probe requests from triggering unauthorized session expiration events." />
-    <option name="LAST_COMMIT_MESSAGE" value="fix(auth): prevent false session expiration event during initial session probe&#10;&#10;- Updated API client to exclude `/auth/session` probe requests from triggering unauthorized session expiration events." />
+    <MESSAGE value="chore: remove unused configuration and documentation files&#10;&#10;- Deleted `GEMINI.md`, `render.yaml`, `vercel.json`, and related config files.&#10;- Cleaned up project to streamline unused assets and improve maintainability." />
+    <option name="LAST_COMMIT_MESSAGE" value="chore: remove unused configuration and documentation files&#10;&#10;- Deleted `GEMINI.md`, `render.yaml`, `vercel.json`, and related config files.&#10;- Cleaned up project to streamline unused assets and improve maintainability." />
   </component>
 </project>
