@@ -4,21 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ef08cf71-ca6f-4bbe-93c4-bff7039455ab" name="Changes" comment="feat(chat): add GSAP animations to enhance MessageBubble and ChatPage UI&#10;&#10;- Integrated GSAP and `@gsap/react` for interactive animations.&#10;- Added message bubble animations on loading and error states.&#10;- Introduced hero section animations and proactive tips float effect in ChatPage.&#10;- Updated dependencies to include GSAP and `@gsap/react`.">
+    <list default="true" id="ef08cf71-ca6f-4bbe-93c4-bff7039455ab" name="Changes" comment="feat(auth): enhance authentication flow with session management via cookies&#10;&#10;- Replaced localStorage session management with HttpOnly cookies for increased security.&#10;- Implemented new `/auth/session` and `/auth/logout` endpoints for session synchronization.&#10;- Updated API client to handle session-based user retrieval and logout actions.&#10;- Modified frontend authentication logic to use session cookies and save user data in `sessionStorage`.&#10;- Enhanced backend to set and clear access cookies securely.&#10;- Added Helmet and updated CORS configuration for improved security.&#10;- Refined error handling and improved user state synchronization across the application.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/apps/web/src/api/client.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/src/api/client.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/web/src/api/endpoints.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/src/api/endpoints.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/web/src/components/chat/MessageBubble.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/src/components/chat/MessageBubble.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/web/src/contexts/AuthContext.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/src/contexts/AuthContext.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/web/src/pages/auth/ActivateGuestPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/src/pages/auth/ActivateGuestPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/web/src/pages/auth/CallbackPage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/src/pages/auth/CallbackPage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/apps/web/src/utils/storage.ts" beforeDir="false" afterPath="$PROJECT_DIR$/apps/web/src/utils/storage.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/api/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/services/api/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/api/src/main.ts" beforeDir="false" afterPath="$PROJECT_DIR$/services/api/src/main.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/api/src/modules/admin/presentation/controllers/admin.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/services/api/src/modules/admin/presentation/controllers/admin.controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/api/src/modules/auth/jwt.strategy.ts" beforeDir="false" afterPath="$PROJECT_DIR$/services/api/src/modules/auth/jwt.strategy.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/api/src/modules/auth/presentation/controllers/auth.controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/services/api/src/modules/auth/presentation/controllers/auth.controller.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -173,7 +161,7 @@
       <workItem from="1777968876595" duration="10863000" />
       <workItem from="1777984565380" duration="10516000" />
       <workItem from="1778030746714" duration="17000" />
-      <workItem from="1778055428735" duration="7172000" />
+      <workItem from="1778055428735" duration="8539000" />
     </task>
     <task id="LOCAL-00001" summary="chore: add IDE config files, update fonts, and refine global styles formatting&#10;&#10;- Introduced new `.idea` config files for project-specific settings.  &#10;- Updated font assets and standardized typography tokens across the project.&#10;- Enhanced LogsPage for improved structure and markdown rendering.  &#10;- Refined global styles and component variants for error handling and improved UX.">
       <option name="closed" value="true" />
@@ -207,7 +195,15 @@
       <option name="project" value="LOCAL" />
       <updated>1777994475614</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="feat(auth): enhance authentication flow with session management via cookies&#10;&#10;- Replaced localStorage session management with HttpOnly cookies for increased security.&#10;- Implemented new `/auth/session` and `/auth/logout` endpoints for session synchronization.&#10;- Updated API client to handle session-based user retrieval and logout actions.&#10;- Modified frontend authentication logic to use session cookies and save user data in `sessionStorage`.&#10;- Enhanced backend to set and clear access cookies securely.&#10;- Added Helmet and updated CORS configuration for improved security.&#10;- Refined error handling and improved user state synchronization across the application.">
+      <option name="closed" value="true" />
+      <created>1778064422006</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1778064422006</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -230,6 +226,7 @@
     <MESSAGE value="feat(admin): implement dynamic admin dashboard components and enhance UI&#10;&#10;- Introduced reusable chart components (`ChartContainer`, `ChartTooltipContent`, etc.) for admin dashboard.&#10;- Implemented new charts: `QueryVolumeChart`, `DailyActivityChart`, and `DocumentStatusDistributionChart` for usage metrics.&#10;- Added `InteractivePieChart` for interactive data visualization.&#10;- Created `RecentFeedbacksTable` to display admin feedback with improved UI semantics.&#10;- Developed a new `Select` component for enhanced dropdown functionality." />
     <MESSAGE value="feat: implement custom Avatar and Drawer components, enhance admin layout, and add profile management&#10;&#10;- Added `Avatar` and `Drawer` components with Radix primitives for modular UI.&#10;- Enhanced `AdminLayout` with a profile management drawer.&#10;- Introduced `ProfileDrawer` for updating passwords and viewing user details.&#10;- Improved localization and updated numerous labels, tooltips, and UI texts.&#10;- Implemented backend use case for password updates with validation logic." />
     <MESSAGE value="feat(chat): add GSAP animations to enhance MessageBubble and ChatPage UI&#10;&#10;- Integrated GSAP and `@gsap/react` for interactive animations.&#10;- Added message bubble animations on loading and error states.&#10;- Introduced hero section animations and proactive tips float effect in ChatPage.&#10;- Updated dependencies to include GSAP and `@gsap/react`." />
-    <option name="LAST_COMMIT_MESSAGE" value="feat(chat): add GSAP animations to enhance MessageBubble and ChatPage UI&#10;&#10;- Integrated GSAP and `@gsap/react` for interactive animations.&#10;- Added message bubble animations on loading and error states.&#10;- Introduced hero section animations and proactive tips float effect in ChatPage.&#10;- Updated dependencies to include GSAP and `@gsap/react`." />
+    <MESSAGE value="feat(auth): enhance authentication flow with session management via cookies&#10;&#10;- Replaced localStorage session management with HttpOnly cookies for increased security.&#10;- Implemented new `/auth/session` and `/auth/logout` endpoints for session synchronization.&#10;- Updated API client to handle session-based user retrieval and logout actions.&#10;- Modified frontend authentication logic to use session cookies and save user data in `sessionStorage`.&#10;- Enhanced backend to set and clear access cookies securely.&#10;- Added Helmet and updated CORS configuration for improved security.&#10;- Refined error handling and improved user state synchronization across the application." />
+    <option name="LAST_COMMIT_MESSAGE" value="feat(auth): enhance authentication flow with session management via cookies&#10;&#10;- Replaced localStorage session management with HttpOnly cookies for increased security.&#10;- Implemented new `/auth/session` and `/auth/logout` endpoints for session synchronization.&#10;- Updated API client to handle session-based user retrieval and logout actions.&#10;- Modified frontend authentication logic to use session cookies and save user data in `sessionStorage`.&#10;- Enhanced backend to set and clear access cookies securely.&#10;- Added Helmet and updated CORS configuration for improved security.&#10;- Refined error handling and improved user state synchronization across the application." />
   </component>
 </project>

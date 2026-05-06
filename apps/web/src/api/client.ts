@@ -18,7 +18,12 @@ const apiClient: AxiosInstance = axios.create({
 apiClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
-    if (error.response?.status === 401) {
+    const requestUrl = error.config?.url ?? ""
+    const isSessionProbe = requestUrl.includes(ENDPOINTS.session)
+
+    // Évite un faux "session_expired" sur la vérification initiale de session
+    // (ex: arrivée sur /login sans cookie valide).
+    if (error.response?.status === 401 && !isSessionProbe) {
       window.dispatchEvent(new CustomEvent('auth:expired'))
     }
     return Promise.reject(error)
