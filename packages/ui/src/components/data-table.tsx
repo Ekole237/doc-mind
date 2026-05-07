@@ -5,7 +5,7 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import type { ColumnDef, SortingState } from "@tanstack/react-table"
+import type { Column, ColumnDef, SortingState } from "@tanstack/react-table"
 import { ChevronLeft, ChevronRight, SearchIcon } from "lucide-react"
 import * as React from "react"
 
@@ -82,21 +82,17 @@ export interface DataTableProps<T> {
 /**
  * En-tête de colonne avec support du tri
  */
-export interface DataTableColumnHeaderProps {
-  column: {
-    getCanSort: () => boolean
-    getToggleSortingHandler: () => (() => void) | undefined
-    getIsSorted: () => "asc" | "desc" | false
-  }
+export interface DataTableColumnHeaderProps<TData, TValue> {
+  column: Column<TData, TValue>
   title: string
   className?: string
 }
 
-export function DataTableColumnHeader({
+export function DataTableColumnHeader<TData, TValue>({
   column,
   title,
   className,
-}: DataTableColumnHeaderProps) {
+}: DataTableColumnHeaderProps<TData, TValue>) {
   if (!column.getCanSort()) {
     return <div className={cn("text-left", className)}>{title}</div>
   }
