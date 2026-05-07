@@ -1,12 +1,11 @@
 "use client"
 
 import {
-  ColumnDef,
-  SortingState,
   flexRender,
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table"
+import type { ColumnDef, SortingState } from "@tanstack/react-table"
 import { ChevronLeft, ChevronRight, SearchIcon } from "lucide-react"
 import * as React from "react"
 
@@ -83,17 +82,17 @@ export interface DataTableProps<T> {
 /**
  * En-tête de colonne avec support du tri
  */
-export interface DataTableColumnHeaderProps<T> {
+export interface DataTableColumnHeaderProps {
   column: any
   title: string
   className?: string
 }
 
-export function DataTableColumnHeader<T>({
+export function DataTableColumnHeader({
   column,
   title,
   className,
-}: DataTableColumnHeaderProps<T>) {
+}: DataTableColumnHeaderProps) {
   if (!column.getCanSort()) {
     return <div className={cn("text-left", className)}>{title}</div>
   }
@@ -211,9 +210,7 @@ export function DataTable<T extends { id?: string }>({
   maxHeight = "100%",
 }: DataTableProps<T>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
-  const [selectedRows, setSelectedRows] = React.useState<Set<string>>(
-    new Set()
-  )
+  const [selectedRows, setSelectedRows] = React.useState<Set<string>>(new Set())
   const [focused, setFocused] = React.useState(false)
 
   // Notifier le parent des changements de sélection
@@ -239,7 +236,7 @@ export function DataTable<T extends { id?: string }>({
               // Mettre à jour selectedRows avec tous les IDs visibles
               if (value) {
                 const allIds = data
-                  .map((row) => (row as any).id || "")
+                  .map((row) => (row as { id?: string }).id || "")
                   .filter(Boolean)
                 setSelectedRows(new Set(allIds))
               } else {
@@ -255,7 +252,7 @@ export function DataTable<T extends { id?: string }>({
             onCheckedChange={(value) => {
               row.toggleSelected(!!value)
               // Mettre à jour selectedRows
-              const id = (row.original as any).id || ""
+              const id = (row.original as { id?: string }).id || ""
               if (id) {
                 setSelectedRows((prev) => {
                   const newSet = new Set(prev)
@@ -304,7 +301,7 @@ export function DataTable<T extends { id?: string }>({
           <div
             className={cn(
               "flex items-center gap-2 rounded-2xl border border-input px-3 py-1 transition-colors",
-              focused && "ring-1 ring-ring ring-offset-2 border-transparent"
+              focused && "border-transparent ring-1 ring-ring ring-offset-2"
             )}
           >
             <SearchIcon
@@ -326,12 +323,9 @@ export function DataTable<T extends { id?: string }>({
       )}
 
       {/* Desktop Table */}
-      <div
-        className="hidden md:block overflow-x-auto"
-        style={{ maxHeight }}
-      >
+      <div className="hidden overflow-x-auto md:block" style={{ maxHeight }}>
         <Table>
-          <TableHeader className="sticky top-0 z-10 bg-primary/50 backdrop-blur text-primary-foreground">
+          <TableHeader className="sticky top-0 z-10 bg-primary/50 text-primary-foreground backdrop-blur">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id} className="hover:bg-transparent">
                 {headerGroup.headers.map((header) => (
@@ -343,7 +337,10 @@ export function DataTable<T extends { id?: string }>({
                   >
                     {header.isPlaceholder
                       ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                   </TableHead>
                 ))}
               </TableRow>
@@ -377,7 +374,10 @@ export function DataTable<T extends { id?: string }>({
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
@@ -388,18 +388,23 @@ export function DataTable<T extends { id?: string }>({
       </div>
 
       {/* Mobile Cards */}
-      <div className="md:hidden space-y-3 p-3">
+      <div className="space-y-3 p-3 md:hidden">
         {isLoading ? (
-          <div className="text-center text-muted-foreground py-8">
+          <div className="py-8 text-center text-muted-foreground">
             Chargement...
           </div>
         ) : table.getRowModel().rows.length === 0 ? (
-          <div className="text-center text-muted-foreground py-8">
+          <div className="py-8 text-center text-muted-foreground">
             {emptyMessage}
           </div>
         ) : (
           table.getRowModel().rows.map((row) => {
-            const dataRow = row.original as any
+            const dataRow = row.original as {
+              id?: string
+              _title?: string
+              title?: string
+              name?: string
+            }
             return (
               <div
                 key={row.id}
@@ -439,10 +444,16 @@ export function DataTable<T extends { id?: string }>({
                     return (
                       <div key={cell.id}>
                         <div className="font-medium text-foreground">
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
                         </div>
                         <div>
-                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
                         </div>
                       </div>
                     )
