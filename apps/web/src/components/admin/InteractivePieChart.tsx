@@ -1,32 +1,32 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@workspace/ui/components/card"
-import { ChartContainer, type ChartConfig, ChartTooltip, ChartTooltipContent } from "@workspace/ui/components/chart"
-import { useMemo, useState } from "react"
-import { Cell, Pie, PieChart, Sector } from "recharts"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@workspace/ui/components/card";
+import {
+  ChartContainer,
+  type ChartConfig,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@workspace/ui/components/chart";
+import { useMemo, useState } from "react";
+import { Cell, Pie, PieChart } from "recharts";
 
 export interface InteractivePieChartItem {
-  key: string
-  label: string
-  value: number
-  color: string
+  key: string;
+  label: string;
+  value: number;
+  color: string;
 }
 
 interface InteractivePieChartProps {
-  title: string
-  description?: string
-  valueLabel?: string
-  items: InteractivePieChartItem[]
-  className?: string
-}
-
-interface PieShapeProps {
-  cx?: number
-  cy?: number
-  innerRadius?: number
-  outerRadius?: number
-  startAngle?: number
-  endAngle?: number
-  fill?: string
-  index?: number
+  title: string;
+  description?: string;
+  valueLabel?: string;
+  items: InteractivePieChartItem[];
+  className?: string;
 }
 
 export function InteractivePieChart({
@@ -36,7 +36,7 @@ export function InteractivePieChart({
   items,
   className,
 }: InteractivePieChartProps) {
-  const [activeKey, setActiveKey] = useState(items[0]?.key ?? "")
+  const [activeKey, setActiveKey] = useState(items[0]?.key ?? "");
 
   const chartConfig = useMemo<ChartConfig>(
     () =>
@@ -44,30 +44,18 @@ export function InteractivePieChart({
         acc[item.key] = {
           label: item.label,
           color: item.color,
-        }
-        return acc
+        };
+        return acc;
       }, {}),
     [items]
-  )
+  );
 
-  const activeIndex = useMemo(() => items.findIndex((item) => item.key === activeKey), [activeKey, items])
-  const safeActiveIndex = activeIndex >= 0 ? activeIndex : 0
-  const activeItem = items[safeActiveIndex]
-
-  const renderActiveShape = (props: PieShapeProps) => {
-    const { index, outerRadius = 0, ...rest } = props
-
-    if (index === safeActiveIndex) {
-      return (
-        <g>
-          <Sector {...rest} outerRadius={outerRadius + 8} />
-          <Sector {...rest} outerRadius={outerRadius + 18} innerRadius={outerRadius + 10} />
-        </g>
-      )
-    }
-
-    return <Sector {...rest} outerRadius={outerRadius} />
-  }
+  const activeIndex = useMemo(
+    () => items.findIndex((item) => item.key === activeKey),
+    [activeKey, items]
+  );
+  const safeActiveIndex = activeIndex >= 0 ? activeIndex : 0;
+  const activeItem = items[safeActiveIndex];
 
   return (
     <Card className={className}>
@@ -117,17 +105,23 @@ export function InteractivePieChart({
                 data={items}
                 dataKey="value"
                 nameKey="key"
+                cx="50%"
+                cy="50%"
                 innerRadius={62}
                 outerRadius={88}
                 strokeWidth={4}
-                activeIndex={safeActiveIndex}
-                activeShape={renderActiveShape}
               >
                 {items.map((entry) => (
                   <Cell key={entry.key} fill={`var(--color-${entry.key})`} />
                 ))}
               </Pie>
-              <text x="50%" y="48%" textAnchor="middle" dominantBaseline="middle" className="fill-foreground text-3xl font-bold">
+              <text
+                x="50%"
+                y="48%"
+                textAnchor="middle"
+                dominantBaseline="middle"
+                className="fill-foreground text-3xl font-bold"
+              >
                 {activeItem?.value.toLocaleString("fr-FR") ?? "0"}
               </text>
               <text
@@ -144,5 +138,5 @@ export function InteractivePieChart({
         )}
       </CardContent>
     </Card>
-  )
+  );
 }
