@@ -26,9 +26,8 @@ export class DocumentMapper {
       driveUrl: document.driveUrl,
       filePath: document.filePath,
       mimeType: document.mimeType,
-      confidentiality:
-        document.confidentiality as PrismaDocument['confidentiality'],
-      status: document.status as PrismaDocument['status'],
+      confidentiality: document.confidentiality,
+      status: document.status,
       chunkCount: document.chunkCount,
       lastModified: document.lastModified,
       createdAt: document.createdAt,

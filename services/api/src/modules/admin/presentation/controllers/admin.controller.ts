@@ -62,28 +62,44 @@ export class AdminController {
     '.txt',
   ]);
 
-  private _parsePositiveInt(value: string | undefined, field: string, defaultValue: number): number {
+  private _parsePositiveInt(
+    value: string | undefined,
+    field: string,
+    defaultValue: number,
+  ): number {
     if (!value) return defaultValue;
     const parsed = Number.parseInt(value, 10);
     if (!Number.isFinite(parsed) || parsed < 1) {
-      throw new BadRequestException(`Le paramètre ${field} doit être un entier positif.`);
+      throw new BadRequestException(
+        `Le paramètre ${field} doit être un entier positif.`,
+      );
     }
     return parsed;
   }
 
-  private _parseIsoDate(value: string | undefined, field: string): Date | undefined {
+  private _parseIsoDate(
+    value: string | undefined,
+    field: string,
+  ): Date | undefined {
     if (!value) return undefined;
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) {
-      throw new BadRequestException(`Le paramètre ${field} doit être une date ISO valide.`);
+      throw new BadRequestException(
+        `Le paramètre ${field} doit être une date ISO valide.`,
+      );
     }
     return date;
   }
 
-  private _parseBoolean(value: string | undefined, field: string): boolean | undefined {
+  private _parseBoolean(
+    value: string | undefined,
+    field: string,
+  ): boolean | undefined {
     if (value === undefined) return undefined;
     if (value !== 'true' && value !== 'false') {
-      throw new BadRequestException(`Le paramètre ${field} doit valoir "true" ou "false".`);
+      throw new BadRequestException(
+        `Le paramètre ${field} doit valoir "true" ou "false".`,
+      );
     }
     return value === 'true';
   }
@@ -250,7 +266,9 @@ export class AdminController {
     const pageValue = this._parsePositiveInt(page, 'page', 1);
     const limitValue = this._parsePositiveInt(limit, 'limit', 10);
     if (limitValue > 100) {
-      throw new BadRequestException('Le paramètre limit ne peut pas dépasser 100.');
+      throw new BadRequestException(
+        'Le paramètre limit ne peut pas dépasser 100.',
+      );
     }
 
     return await this._listQueryLogsUseCase.execute({

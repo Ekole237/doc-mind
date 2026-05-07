@@ -19,7 +19,7 @@ export class FeedbackMapper {
       id: feedback.id,
       queryLogId: feedback.queryLogId,
       comment: feedback.comment,
-      status: feedback.status as PrismaFeedback['status'],
+      status: feedback.status,
       createdAt: feedback.createdAt,
       resolvedAt: feedback.resolvedAt,
     };

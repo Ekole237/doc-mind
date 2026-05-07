@@ -74,7 +74,9 @@ export class LlmServiceImplementation implements LlmService {
       const normalized = responseText.trim().toUpperCase();
       return normalized.includes('SEARCH') ? 'SEARCH' : 'CHAT';
     } catch (error) {
-      this._logger.error(`Error classifying intent: ${error.message}`);
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      this._logger.error(`Error classifying intent: ${errorMessage}`);
       return 'SEARCH'; // Default to search on error for safety
     }
   }
@@ -105,7 +107,9 @@ export class LlmServiceImplementation implements LlmService {
         return await this._callOpenAi(systemPrompt, userPrompt);
       }
     } catch (error) {
-      this._logger.error(`Error condensing question: ${error.message}`);
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      this._logger.error(`Error condensing question: ${errorMessage}`);
       return question;
     }
   }
@@ -249,13 +253,10 @@ export class LlmServiceImplementation implements LlmService {
 
     const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
       { role: 'system', content: systemPrompt },
-      ...history.map(
-        (m) =>
-          ({
-            role: m.role,
-            content: m.content,
-          }) as OpenAI.Chat.ChatCompletionMessageParam,
-      ),
+      ...history.map((m) => ({
+        role: m.role,
+        content: m.content,
+      })),
       { role: 'user', content: userPrompt },
     ];
 
@@ -281,13 +282,10 @@ export class LlmServiceImplementation implements LlmService {
 
     const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [
       { role: 'system', content: systemPrompt },
-      ...history.map(
-        (m) =>
-          ({
-            role: m.role,
-            content: m.content,
-          }) as OpenAI.Chat.ChatCompletionMessageParam,
-      ),
+      ...history.map((m) => ({
+        role: m.role,
+        content: m.content,
+      })),
       { role: 'user', content: userPrompt },
     ];
 
