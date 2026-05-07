@@ -1,41 +1,46 @@
-import { Button } from "@workspace/ui/components/button"
-import { ArrowLeft, Flag } from "lucide-react"
-import { useEffect, useState } from "react"
-import { useNavigate } from "react-router-dom"
-import apiClient from "../../api/client"
-import { useAuth } from "../../hooks/useAuth"
-import type { QueryLogSummary } from "../../types"
+import { Button } from "@workspace/ui/components/button";
+import { ArrowLeft, Flag } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import apiClient from "../../api/client";
+import { useAuth } from "../../hooks/useAuth";
+import type { QueryLogSummary } from "../../types";
 
 export function HistoryPage() {
-  const navigate = useNavigate()
-  const { logout } = useAuth()
+  const navigate = useNavigate();
+  const { logout } = useAuth();
 
-  const [messages, setMessages] = useState<QueryLogSummary[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState("")
-  const [page, setPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
-
-  useEffect(() => {
-    loadHistory()
-  }, [page])
+  const [messages, setMessages] = useState<QueryLogSummary[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const loadHistory = async () => {
-    setIsLoading(true)
-    setError("")
+    setIsLoading(true);
+    setError("");
     try {
-      const response = await apiClient.get<{ logs: QueryLogSummary[]; total: number; page: number; limit: number }>("/chat/history", {
+      const response = await apiClient.get<{
+        logs: QueryLogSummary[];
+        total: number;
+        page: number;
+        limit: number;
+      }>("/chat/history", {
         params: { page, limit: 10 },
-      })
+      });
 
-      setMessages(response.data.logs)
-      setTotalPages(Math.ceil(response.data.total / response.data.limit))
+      setMessages(response.data.logs);
+      setTotalPages(Math.ceil(response.data.total / response.data.limit));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erreur lors du chargement de l'historique")
+      setError(err instanceof Error ? err.message : "Erreur lors du chargement de l'historique");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
+
+  useEffect(() => {
+    loadHistory();
+  }, [page]);
 
   return (
     <div className="flex h-screen flex-col bg-background">
@@ -50,8 +55,8 @@ export function HistoryPage() {
         <Button
           variant="ghost"
           onClick={() => {
-            logout()
-            navigate("/login")
+            logout();
+            navigate("/login");
           }}
         >
           Déconnexion
@@ -61,14 +66,10 @@ export function HistoryPage() {
       {/* Content */}
       <main className="flex-1 overflow-auto p-6">
         {error && (
-          <div className="mb-4 rounded-lg bg-destructive/10 p-4 text-destructive">
-            {error}
-          </div>
+          <div className="mb-4 rounded-lg bg-destructive/10 p-4 text-destructive">{error}</div>
         )}
 
-        {isLoading && (
-          <div className="text-center text-muted-foreground">Chargement...</div>
-        )}
+        {isLoading && <div className="text-center text-muted-foreground">Chargement...</div>}
 
         {!isLoading && messages.length === 0 && (
           <div className="text-center text-muted-foreground">Aucun historique disponible</div>
@@ -89,9 +90,7 @@ export function HistoryPage() {
                     )}
                   </div>
                   <div className="mt-3 flex items-center gap-4 text-xs text-muted-foreground">
-                    {msg.sourceDocName && (
-                      <span>📄 {msg.sourceDocName}</span>
-                    )}
+                    {msg.sourceDocName && <span>📄 {msg.sourceDocName}</span>}
                     {msg.isIgnorance && (
                       <span className="rounded-full bg-[var(--warning-bg)]/10 px-2 py-1 text-[var(--warning-bg)]">
                         Pas de réponse
@@ -127,5 +126,5 @@ export function HistoryPage() {
         )}
       </main>
     </div>
-  )
+  );
 }

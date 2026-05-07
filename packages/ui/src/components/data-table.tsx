@@ -83,7 +83,11 @@ export interface DataTableProps<T> {
  * En-tête de colonne avec support du tri
  */
 export interface DataTableColumnHeaderProps {
-  column: any
+  column: {
+    getCanSort: () => boolean
+    getToggleSortingHandler: () => (() => void) | undefined
+    getIsSorted: () => "asc" | "desc" | false
+  }
   title: string
   className?: string
 }
@@ -276,6 +280,7 @@ export function DataTable<T extends { id?: string }>({
     ]
   }, [columns, withSelection, data])
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data,
     columns: displayColumns,

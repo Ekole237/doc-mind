@@ -6,8 +6,6 @@ import { cn } from "@workspace/ui/lib/utils"
 
 import { buttonVariants } from "./button-variants"
 
-export { buttonVariants }
-
 function Button({
   className,
   variant = "default",

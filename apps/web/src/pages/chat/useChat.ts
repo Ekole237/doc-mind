@@ -1,100 +1,84 @@
-import { useState, useRef, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
-import type { AxiosError } from "axios"
-import apiClient, { chat } from "../../api/client"
-import type { ApiError, ChatMessage, ChatResponse, ChatSession } from "../../types"
+import React, { useState, useRef, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import type { AxiosError } from "axios";
+import apiClient, { chat } from "../../api/client";
+import type { ApiError, ChatMessage, ChatResponse, ChatSession } from "../../types";
 
-const MIN_LENGTH = 3
-const MAX_LENGTH = 1000
+const MIN_LENGTH = 3;
+const MAX_LENGTH = 1000;
 
 function getFeedbackErrorMessage(err: unknown): string {
-  const axiosErr = err as AxiosError<ApiError>
-  const code = axiosErr.response?.data?.code
-  if (code === "FEEDBACK_ALREADY_EXISTS") return "Un feedback a déjà été soumis pour cette réponse."
-  if (code === "QUERY_LOG_NOT_FOUND") return "Réponse introuvable."
-  return "Erreur lors de l'envoi du feedback."
+  const axiosErr = err as AxiosError<ApiError>;
+  const code = axiosErr.response?.data?.code;
+  if (code === "FEEDBACK_ALREADY_EXISTS")
+    return "Un feedback a déjà été soumis pour cette réponse.";
+  if (code === "QUERY_LOG_NOT_FOUND") return "Réponse introuvable.";
+  return "Erreur lors de l'envoi du feedback.";
 }
 
 export function useChat(id?: string) {
-  const navigate = useNavigate()
-  const [messages, setMessages] = useState<ChatMessage[]>([])
-  const [sessionId, setSessionId] = useState<string | null>(id || null)
-  const [sessions, setSessions] = useState<ChatSession[]>([])
-  const [inputValue, setInputValue] = useState("")
-  const [inputError, setInputError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
-  const [rateLimited, setRateLimited] = useState(false)
+  const navigate = useNavigate();
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [sessionId, setSessionId] = useState<string | null>(id || null);
+  const [sessions, setSessions] = useState<ChatSession[]>([]);
+  const [inputValue, setInputValue] = useState("");
+  const [inputError, setInputError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [rateLimited, setRateLimited] = useState(false);
   const [feedbackModal, setFeedbackModal] = useState<{ isOpen: boolean; queryLogId: string }>({
     isOpen: false,
     queryLogId: "",
-  })
+  });
 
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const lastQuestionRef = useRef<string>("")
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const lastQuestionRef = useRef<string>("");
 
-  // Handle URL change
-  useEffect(() => {
-    if (id && id !== sessionId) {
-      loadSession(id)
-    } else if (!id && sessionId) {
-      setSessionId(null)
-      setMessages([])
-    }
-  }, [id])
-
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
-    }
-  }, [messages, isLoading])
-
-  const fetchSessions = async () => {
+  const fetchSessions = useCallback(async () => {
     try {
-      const data = await chat.getSessions()
-      setSessions(data)
-    } catch (error) {
-      console.error("Erreur lors de la récupération des sessions", error)
+      const data = await chat.getSessions();
+      setSessions(data);
+    } catch (err) {
+      console.error("Failed to fetch sessions:", err);
     }
-  }
+  }, []);
 
-  useEffect(() => {
-    fetchSessions()
-  }, [])
-
-  const loadSession = async (id: string) => {
-    setIsLoading(true)
-    try {
-      const logs = await chat.getSessionLogs(id)
-      setMessages(logs)
-      setSessionId(id)
-    } catch (error) {
-      console.error("Erreur lors du chargement de la session", error)
-      navigate("/chat")
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  const loadSession = useCallback(
+    async (id: string) => {
+      setIsLoading(true);
+      try {
+        const logs = await chat.getSessionLogs(id);
+        setMessages(logs);
+        setSessionId(id);
+      } catch (err) {
+        console.error("Failed to load session:", err);
+        navigate("/chat");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [navigate]
+  );
 
   const clearSession = () => {
-    setMessages([])
-    setSessionId(null)
-    navigate("/chat")
-  }
+    setMessages([]);
+    setSessionId(null);
+    navigate("/chat");
+  };
 
   const executeQuery = async (question: string) => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const payload: { question: string; context_id?: string } = { question }
+      const payload: { question: string; context_id?: string } = { question };
       if (sessionId) {
-        payload.context_id = sessionId
+        payload.context_id = sessionId;
       }
 
-      const { data } = await apiClient.post<ChatResponse>("/chat/query", payload)
+      const { data } = await apiClient.post<ChatResponse>("/chat/query", payload);
 
       if (!sessionId && data.context_id) {
-        setSessionId(data.context_id)
-        fetchSessions()
-        navigate(`/chat/${data.context_id}`, { replace: true })
+        setSessionId(data.context_id);
+        fetchSessions();
+        navigate(`/chat/${data.context_id}`, { replace: true });
       }
 
       const assistantMsg: ChatMessage = {
@@ -108,26 +92,26 @@ export function useChat(id?: string) {
         queryLogId: data.queryLogId,
         responseTimeMs: data.responseTimeMs,
         hasFeedback: false,
-      }
-      setMessages((prev) => [...prev, assistantMsg])
+      };
+      setMessages((prev) => [...prev, assistantMsg]);
     } catch (err) {
-      const axiosErr = err as AxiosError
-      const status = axiosErr.response?.status
+      const axiosErr = err as AxiosError;
+      const status = axiosErr.response?.status;
 
-      let errorType: ChatMessage["errorType"] = "unknown"
-      let content = "Une erreur s'est produite. Réessayez."
+      let errorType: ChatMessage["errorType"] = "unknown";
+      let content = "Une erreur s'est produite. Réessayez.";
 
       if (!axiosErr.response) {
-        errorType = "network"
-        content = "Vérifiez votre connexion internet et réessayez."
+        errorType = "network";
+        content = "Vérifiez votre connexion internet et réessayez.";
       } else if (status === 429) {
-        errorType = "rate_limit"
-        content = "Vous avez envoyé trop de questions. Patientez quelques minutes."
-        setRateLimited(true)
-        setTimeout(() => setRateLimited(false), 60_000)
+        errorType = "rate_limit";
+        content = "Vous avez envoyé trop de questions. Patientez quelques minutes.";
+        setRateLimited(true);
+        setTimeout(() => setRateLimited(false), 60_000);
       } else if (status && status >= 500) {
-        errorType = "server"
-        content = "Un problème est survenu de notre côté. Réessayez dans un instant."
+        errorType = "server";
+        content = "Un problème est survenu de notre côté. Réessayez dans un instant.";
       }
 
       setMessages((prev) => [
@@ -139,64 +123,61 @@ export function useChat(id?: string) {
           isError: true,
           errorType,
         },
-      ])
+      ]);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const sendMessage = async (text: string) => {
-    const question = text.trim()
+    const question = text.trim();
 
-    setInputError(null)
+    setInputError(null);
     if (question.length < MIN_LENGTH) {
-      setInputError(`La question doit contenir au moins ${MIN_LENGTH} caractères.`)
-      return
+      setInputError(`La question doit contenir au moins ${MIN_LENGTH} caractères.`);
+      return;
     }
     if (question.length > MAX_LENGTH) {
-      setInputError(`La question ne peut pas dépasser ${MAX_LENGTH} caractères.`)
-      return
+      setInputError(`La question ne peut pas dépasser ${MAX_LENGTH} caractères.`);
+      return;
     }
-    if (isLoading || rateLimited) return
+    if (isLoading || rateLimited) return;
 
-    lastQuestionRef.current = question
-    setMessages((prev) => [
-      ...prev,
-      { id: crypto.randomUUID(), role: "user", content: question },
-    ])
-    setInputValue("")
-    await executeQuery(question)
-  }
+    lastQuestionRef.current = question;
+    setMessages((prev) => [...prev, { id: crypto.randomUUID(), role: "user", content: question }]);
+    setInputValue("");
+    await executeQuery(question);
+  };
 
   const retryLastMessage = async () => {
-    if (!lastQuestionRef.current || isLoading || rateLimited) return
+    if (!lastQuestionRef.current || isLoading || rateLimited) return;
     setMessages((prev) => {
-      const last = prev[prev.length - 1]
-      return last?.isError ? prev.slice(0, -1) : prev
-    })
-    await executeQuery(lastQuestionRef.current)
-  }
+      const last = prev[prev.length - 1];
+      return last?.isError ? prev.slice(0, -1) : prev;
+    });
+    await executeQuery(lastQuestionRef.current);
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    await sendMessage(inputValue)
-  }
+    e.preventDefault();
+    await sendMessage(inputValue);
+  };
 
   const handleFeedback = async (comment?: string) => {
     try {
       await apiClient.post("/chat/feedback", {
         queryLogId: feedbackModal.queryLogId,
         comment,
-      })
+      });
       setMessages((prev) =>
         prev.map((m) =>
           m.queryLogId === feedbackModal.queryLogId ? { ...m, hasFeedback: true } : m
         )
-      )
+      );
     } catch (err) {
-      throw new Error(getFeedbackErrorMessage(err))
+      throw new Error(getFeedbackErrorMessage(err));
     }
-  }
+  };
 
   return {
     messages,
@@ -218,5 +199,5 @@ export function useChat(id?: string) {
     sessions,
     sessionId,
     MAX_LENGTH,
-  }
+  };
 }
