@@ -46,7 +46,9 @@ export class S3FileStorageServiceImplementation
   }
 
   onModuleInit() {
-    this.logger.log(`Storage provider: AWS S3 | bucket: ${this._bucket} | region: ${this._config.get<string>('AWS_REGION')}`);
+    this.logger.log(
+      `Storage provider: AWS S3 | bucket: ${this._bucket} | region: ${this._config.get<string>('AWS_REGION')}`,
+    );
   }
 
   async save(file: UploadedFile): Promise<string> {

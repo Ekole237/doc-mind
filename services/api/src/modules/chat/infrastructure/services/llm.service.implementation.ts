@@ -310,7 +310,7 @@ export class LlmServiceImplementation implements LlmService {
   private async _callGroq(
     systemPrompt: string,
     userPrompt: string,
-    jsonMode = false,
+    _jsonMode = false,
     history: ChatMessage[] = [],
   ): Promise<string> {
     const client = new OpenAI({

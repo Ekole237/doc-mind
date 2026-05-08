@@ -190,7 +190,7 @@ export class QueryRagUseCase {
           sourceDocName = sourceChunk.title;
           sourceDriveUrl = sourceChunk.driveUrl;
         }
-      } catch (error) {
+      } catch {
         // Document doesn't exist, don't set foreign key
         console.warn(
           `Document ${sourceChunk.documentId} not found, skipping foreign key reference`,
