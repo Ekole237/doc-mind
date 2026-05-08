@@ -5,6 +5,7 @@
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
+    "start": "npm run start --workspace=services/api",
     "dev:back": "npm run start:dev --workspace=services/api",
     "dev:front": "npm run dev --workspace=apps/web",
     "services": "docker compose -f infra/docker/docker-compose.dev.yml up -d --force-recreate",

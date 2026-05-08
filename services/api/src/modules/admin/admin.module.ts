@@ -27,6 +27,7 @@ import { FeedbackRepositoryImplementation } from '#admin/infrastructure/reposito
 import { FileStorageServiceImplementation } from '#admin/infrastructure/services/file-storage.service.implementation';
 import { LocalFileStorageServiceImplementation } from '#admin/infrastructure/services/local-file-storage.service.implementation';
 import { SupabaseFileStorageServiceImplementation } from '#admin/infrastructure/services/supabase-file-storage.service.implementation';
+import { S3FileStorageServiceImplementation } from '#admin/infrastructure/services/s3-file-storage.service.implementation';
 import { QueryLogsRepositoryImplementation } from '#admin/infrastructure/repositories/query-logs.repository.implementation';
 import { ConfigService } from '@nestjs/config';
 import { VectorStoreServiceImplementation } from '#admin/infrastructure/services/vector-store.service.implementation';
@@ -99,6 +100,8 @@ import { ChatModule } from '../chat/chat.module';
           return new LocalFileStorageServiceImplementation(config);
         if (provider === 'supabase')
           return new SupabaseFileStorageServiceImplementation(config);
+        if (provider === 's3')
+          return new S3FileStorageServiceImplementation(config);
         return new FileStorageServiceImplementation(config);
       },
       inject: [ConfigService],

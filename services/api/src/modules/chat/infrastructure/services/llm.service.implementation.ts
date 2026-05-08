@@ -29,27 +29,53 @@ export class LlmServiceImplementation implements LlmService {
   ): Promise<CompleteResponse> {
     const provider = this._configService.get<string>('LLM_PROVIDER', 'openai');
     const userPrompt = this._promptBuilder.buildUserPrompt(chunks, question);
-    const systemPrompt = this._promptBuilder.SYSTEM_PROMPT;
+
+    // Detect language and check for change
+    const { language, hasChanged, confirmationPrompt } =
+      this._promptBuilder.detectLanguageAndCheckChange(question, history || []);
+
+    // Detect document language
+    const documentContent = chunks.map((c) => c.content).join('\n---\n');
+    const documentLanguage =
+      this._promptBuilder._languageDetection.detectDocumentLanguage(
+        documentContent,
+      );
+
+    // Get appropriate system prompt based on language combination
+    const systemPrompt =
+      documentLanguage !== language
+        ? this._promptBuilder._languageDetection.getMultilingualSystemPrompt(
+            documentLanguage,
+            language,
+            language,
+          )
+        : this._promptBuilder.getSystemPrompt(language);
+
+    // If language changed, include confirmation prompt
+    const finalUserPrompt =
+      hasChanged && confirmationPrompt
+        ? `${confirmationPrompt}\n\n${userPrompt}`
+        : userPrompt;
 
     let responseText = '';
     if (provider === 'anthropic') {
       responseText = await this._callAnthropic(
         systemPrompt,
-        userPrompt,
+        finalUserPrompt,
         history,
       );
     } else if (provider === 'groq') {
       responseText = await this._callGroq(
         systemPrompt,
-        userPrompt,
-        false,
+        finalUserPrompt,
+        true,
         history,
       );
     } else {
       responseText = await this._callOpenAi(
         systemPrompt,
-        userPrompt,
-        false,
+        finalUserPrompt,
+        true,
         history,
       );
     }
@@ -119,17 +145,29 @@ export class LlmServiceImplementation implements LlmService {
     history?: ChatMessage[],
   ): Promise<string> {
     const provider = this._configService.get<string>('LLM_PROVIDER', 'openai');
-    const systemPrompt = this._promptBuilder.CONVERSATIONAL_SYSTEM_PROMPT;
+
+    // Detect language and check for change
+    const { language, hasChanged, confirmationPrompt } =
+      this._promptBuilder.detectLanguageAndCheckChange(message, history || []);
+
+    const systemPrompt =
+      this._promptBuilder.getConversationalSystemPrompt(language);
+
+    // If language changed, include confirmation prompt
+    const finalMessage =
+      hasChanged && confirmationPrompt
+        ? `${confirmationPrompt}\n\n${message}`
+        : message;
 
     if (provider === 'anthropic') {
-      return this._callAnthropic(systemPrompt, message, history);
+      return this._callAnthropic(systemPrompt, finalMessage, history);
     }
 
     if (provider === 'groq') {
-      return this._callGroq(systemPrompt, message, false, history);
+      return this._callGroq(systemPrompt, finalMessage, false, history);
     }
 
-    return this._callOpenAi(systemPrompt, message, false, history);
+    return this._callOpenAi(systemPrompt, finalMessage, false, history);
   }
 
   private _parseJsonResponse(text: string): CompleteResponse {
@@ -294,7 +332,7 @@ export class LlmServiceImplementation implements LlmService {
         'GROQ_MODEL',
         'llama-3.3-70b-versatile',
       ),
-      response_format: jsonMode ? { type: 'json_object' } : undefined,
+      // Groq llama models don't support JSON mode, so we'll handle JSON parsing manually
       messages,
       max_tokens: 1000,
     });

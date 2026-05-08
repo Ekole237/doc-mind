@@ -1,9 +1,17 @@
 import { DocumentChunk } from '#chat/domain/services/vector-search.service';
+import { type ChatMessage } from '#chat/domain/services/llm.service';
 import { Injectable } from '@nestjs/common';
+import {
+  LanguageDetectionService,
+  type SupportedLanguage,
+} from './language-detection.service';
 
 @Injectable()
 export class PromptBuilder {
-  readonly SYSTEM_PROMPT = `Tu es un assistant de recherche expert, dont les connaissances sont exclusivement limitées aux documents fournis dans ton contexte.
+  constructor(public readonly _languageDetection: LanguageDetectionService) {}
+
+  private readonly BASE_SYSTEM_PROMPT = {
+    fr: `Tu es un assistant de recherche expert, dont les connaissances sont exclusivement limitées aux documents fournis dans ton contexte.
 Ton rôle est d'aider les employés à trouver des informations précises sur les politiques internes, les procédures, les avantages sociaux et tout autre sujet présent dans ta base de connaissances.
 
 Voici tes règles de conduite :
@@ -18,12 +26,35 @@ Voici tes règles de conduite :
 5. LIMITES : Si l'information n'est pas dans le contexte, explique poliment que tes connaissances actuelles ne te permettent pas de répondre précisément.
 6. LANGUE : Réponds toujours en français.
 
-Réponds directement au format texte structuré en Markdown, sans salutations.`;
+Réponds directement au format texte structuré en Markdown, sans salutations.`,
 
-  readonly CONVERSATIONAL_SYSTEM_PROMPT = `Tu es un assistant de recherche sympathique et professionnel.
-Réponds UNIQUEMENT en français.
+    en: `You are an expert research assistant whose knowledge is strictly limited to the documents provided in your context.
+Your role is to help employees find precise information about internal policies, procedures, benefits, and any other topic present in your knowledge base.
+
+Here are your guidelines:
+1. TONE: Be professional, precise, and helpful. Adopt a rigorous research assistant posture.
+2. NO GREETINGS: NEVER start your responses with "Hello", "Hi", "Good morning", or any other greeting. Get straight to the point or answer the question factually.
+3. SINGLE SOURCE: Your responses must be based ONLY on the provided context.
+4. FORMATTING: Use Markdown format to structure your responses:
+   - Use **bold** to highlight key terms, amounts, deadlines, or important entities.
+   - Use bullet or numbered lists for enumerations or step-by-step procedures.
+   - Avoid repetitions at the beginning of lists.
+   - Space out your responses with distinct paragraphs.
+5. LIMITS: If the information is not in the context, politely explain that your current knowledge does not allow you to answer precisely.
+6. LANGUAGE: Always respond in English.
+
+Respond directly in structured Markdown text format, without greetings.`,
+  };
+
+  private readonly BASE_CONVERSATIONAL_PROMPT = {
+    fr: `Tu es un assistant de recherche sympathique et professionnel.
 Tu peux répondre aux salutations ou remerciements de manière chaleureuse, mais reste très concis. 
-Évite les formules de politesse excessives ou répétitives.`;
+Évite les formules de politesse excessives ou répétitives.`,
+
+    en: `You are a friendly and professional research assistant.
+You can respond to greetings or thanks warmly, but stay very concise.
+Avoid excessive or repetitive politeness formulas.`,
+  };
 
   readonly INTENT_SYSTEM_PROMPT = `Tu es un classificateur d'intentions. Ta tâche est de déterminer si le message de l'utilisateur nécessite une recherche dans une base de documents (SEARCH) ou s'il s'agit d'une simple interaction conversationnelle (CHAT).
 
@@ -41,6 +72,40 @@ CONVERSATION :
 QUESTION DE SUIVI : {question}
 
 QUESTION AUTONOME :`;
+
+  getSystemPrompt(language: SupportedLanguage): string {
+    return this.BASE_SYSTEM_PROMPT[language];
+  }
+
+  getConversationalSystemPrompt(language: SupportedLanguage): string {
+    return this.BASE_CONVERSATIONAL_PROMPT[language];
+  }
+
+  detectLanguageAndCheckChange(
+    message: string,
+    history: ChatMessage[],
+  ): {
+    language: SupportedLanguage;
+    hasChanged: boolean;
+    confirmationPrompt?: string;
+  } {
+    const { detectedLanguage, hasChanged, previousLanguage } =
+      this._languageDetection.detectLanguageChange(message, history);
+
+    if (hasChanged && previousLanguage) {
+      return {
+        language: detectedLanguage,
+        hasChanged: true,
+        confirmationPrompt:
+          this._languageDetection.getLanguageChangeConfirmationPrompt(
+            detectedLanguage,
+            previousLanguage,
+          ),
+      };
+    }
+
+    return { language: detectedLanguage, hasChanged: false };
+  }
 
   buildUserPrompt(chunks: DocumentChunk[], question: string): string {
     const context = chunks

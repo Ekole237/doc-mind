@@ -4,6 +4,7 @@ import { SubmitFeedbackUseCase } from '#chat/application/use-cases/submit-feedba
 import { ListSessionsUseCase } from '#chat/application/use-cases/list-sessions.use-case';
 import { GetSessionLogsUseCase } from '#chat/application/use-cases/get-session-logs.use-case';
 import { FEEDBACK_REPOSITORY } from '#chat/domain/repositories/feedback.repository';
+import { DOCUMENT_REPOSITORY } from '#admin/domain/repositories/document.repository';
 import { QUERY_LOG_REPOSITORY } from '#chat/domain/repositories/query-log.repository';
 import { LLM_SERVICE } from '#chat/domain/services/llm.service';
 import { VECTOR_SEARCH_SERVICE } from '#chat/domain/services/vector-search.service';
@@ -12,7 +13,9 @@ import { QueryLogRepositoryImplementation } from '#chat/infrastructure/repositor
 import { LlmServiceImplementation } from '#chat/infrastructure/services/llm.service.implementation';
 import { CHAT_SESSION_REPOSITORY } from '#chat/domain/repositories/chat-session.repository';
 import { ChatSessionRepositoryImplementation } from '#chat/infrastructure/repositories/chat-session.repository.implementation';
+import { DocumentRepositoryImplementation } from '#admin/infrastructure/repositories/document.repository.implementation';
 import { PromptBuilder } from '#chat/infrastructure/services/prompt-builder';
+import { LanguageDetectionService } from '#chat/infrastructure/services/language-detection.service';
 import { VectorSearchServiceImplementation } from '#chat/infrastructure/services/vector-search.service.implementation';
 import { ChatController } from '#chat/presentation/controllers/chat.controller';
 import { AuthModule } from '../auth/auth.module';
@@ -31,6 +34,7 @@ import { QdrantModule } from '../../qdrant/qdrant.module';
     ListSessionsUseCase,
     GetSessionLogsUseCase,
     // Infrastructure services
+    LanguageDetectionService,
     PromptBuilder,
     {
       provide: LLM_SERVICE,
@@ -41,6 +45,10 @@ import { QdrantModule } from '../../qdrant/qdrant.module';
       useClass: VectorSearchServiceImplementation,
     },
     // Repository implementations
+    {
+      provide: DOCUMENT_REPOSITORY,
+      useClass: DocumentRepositoryImplementation,
+    },
     {
       provide: QUERY_LOG_REPOSITORY,
       useClass: QueryLogRepositoryImplementation,

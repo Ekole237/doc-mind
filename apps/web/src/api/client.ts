@@ -1,10 +1,10 @@
-import type { AxiosInstance } from "axios"
-import axios, { AxiosError } from "axios"
-import type { ApiError, JwtUser } from "@/types"
-import { API_URL, ENDPOINTS } from "./endpoints"
+import type { AxiosInstance } from "axios";
+import axios, { AxiosError } from "axios";
+import type { JwtUser } from "@/types";
+import { API_URL, ENDPOINTS } from "./endpoints";
+import { ErrorHandler } from "@/utils/error-handler";
 
-
-export const API_BASE_URL = API_URL
+export const API_BASE_URL = API_URL;
 
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_URL,
@@ -12,112 +12,111 @@ const apiClient: AxiosInstance = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-})
+});
 
 // Response interceptor: 401 → logout
 apiClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
-    const requestUrl = error.config?.url ?? ""
-    const isSessionProbe = requestUrl.includes(ENDPOINTS.session)
+    const requestUrl = error.config?.url ?? "";
+    const isSessionProbe = requestUrl.includes(ENDPOINTS.session);
 
     // Évite un faux "session_expired" sur la vérification initiale de session
     // (ex: arrivée sur /login sans cookie valide).
     if (error.response?.status === 401 && !isSessionProbe) {
-      window.dispatchEvent(new CustomEvent('auth:expired'))
+      window.dispatchEvent(new CustomEvent("auth:expired"));
     }
-    return Promise.reject(error)
+    return Promise.reject(error);
   }
-)
+);
 
 export async function login(email: string, password: string, _hp = ""): Promise<JwtUser> {
   try {
-    const response = await apiClient.post<{ user: JwtUser | null }>(ENDPOINTS.login, { email, password, _hp })
+    const response = await apiClient.post<{ user: JwtUser | null }>(ENDPOINTS.login, {
+      email,
+      password,
+      _hp,
+    });
     if (!response.data.user) {
-      throw { statusCode: 500, message: "Session invalide", code: "INVALID_SESSION" } satisfies ApiError
+      throw ErrorHandler.createApiError({
+        statusCode: 500,
+        message: "Session invalide",
+        code: "INVALID_SESSION",
+      });
     }
-    return response.data.user
+    return response.data.user;
   } catch (err) {
-    const axiosError = err as AxiosError<ApiError>
-    if (axiosError.response?.data) {
-      throw axiosError.response.data
-    }
-    throw { statusCode: 0, message: "Erreur réseau", code: "NETWORK_ERROR" } satisfies ApiError
+    throw ErrorHandler.createApiError(err);
   }
 }
 
 export async function getSession(): Promise<JwtUser> {
   try {
-    const response = await apiClient.get<{ user: JwtUser }>(ENDPOINTS.session)
-    return response.data.user
+    const response = await apiClient.get<{ user: JwtUser }>(ENDPOINTS.session);
+    return response.data.user;
   } catch (err) {
-    const axiosError = err as AxiosError<ApiError>
-    if (axiosError.response?.data) {
-      throw axiosError.response.data
-    }
-    throw { statusCode: 0, message: "Erreur réseau", code: "NETWORK_ERROR" } satisfies ApiError
+    throw ErrorHandler.createApiError(err);
   }
 }
 
 export async function logoutSession(): Promise<void> {
-  await apiClient.post(ENDPOINTS.logout)
+  await apiClient.post(ENDPOINTS.logout);
 }
 
 export async function updatePassword(password: string): Promise<{ message: string }> {
   try {
-    const response = await apiClient.put<{ message: string }>(ENDPOINTS.updatePassword, { password })
-    return response.data
+    const response = await apiClient.put<{ message: string }>(ENDPOINTS.updatePassword, {
+      password,
+    });
+    return response.data;
   } catch (err) {
-    const axiosError = err as AxiosError<ApiError>
-    if (axiosError.response?.data) {
-      throw axiosError.response.data
-    }
-    throw { statusCode: 0, message: "Erreur réseau", code: "NETWORK_ERROR" } satisfies ApiError
+    throw ErrorHandler.createApiError(err);
   }
 }
 
 export async function activateGuest(token: string): Promise<JwtUser> {
   try {
-    const response = await apiClient.get<{ user: JwtUser | null }>(ENDPOINTS.activateGuest(token))
+    const response = await apiClient.get<{ user: JwtUser | null }>(ENDPOINTS.activateGuest(token));
     if (!response.data.user) {
-      throw { statusCode: 500, message: "Session invalide", code: "INVALID_SESSION" } satisfies ApiError
+      throw ErrorHandler.createApiError({
+        statusCode: 500,
+        message: "Session invalide",
+        code: "INVALID_SESSION",
+      });
     }
-    return response.data.user
+    return response.data.user;
   } catch (err) {
-    const axiosError = err as AxiosError<ApiError>
-    if (axiosError.response?.data) {
-      throw axiosError.response.data
-    }
-    throw { statusCode: 0, message: "Erreur réseau", code: "NETWORK_ERROR" } satisfies ApiError
+    throw ErrorHandler.createApiError(err);
   }
 }
 
 export async function requestMagicLink(email: string, _hp = ""): Promise<{ message: string }> {
   try {
-    const response = await apiClient.post<{ message: string }>(ENDPOINTS.requestMagicLink, { email, _hp })
-    return response.data
+    const response = await apiClient.post<{ message: string }>(ENDPOINTS.requestMagicLink, {
+      email,
+      _hp,
+    });
+    return response.data;
   } catch (err) {
-    const axiosError = err as AxiosError<ApiError>
-    if (axiosError.response?.data) {
-      throw axiosError.response.data
-    }
-    throw { statusCode: 0, message: "Erreur réseau", code: "NETWORK_ERROR" } satisfies ApiError
+    throw ErrorHandler.createApiError(err);
   }
 }
 
 export async function activateMagicLink(token: string): Promise<JwtUser> {
   try {
-    const response = await apiClient.get<{ user: JwtUser | null }>(ENDPOINTS.activateMagicLink(token))
+    const response = await apiClient.get<{ user: JwtUser | null }>(
+      ENDPOINTS.activateMagicLink(token)
+    );
     if (!response.data.user) {
-      throw { statusCode: 500, message: "Session invalide", code: "INVALID_SESSION" } satisfies ApiError
+      throw ErrorHandler.createApiError({
+        statusCode: 500,
+        message: "Session invalide",
+        code: "INVALID_SESSION",
+      });
     }
-    return response.data.user
+    return response.data.user;
   } catch (err) {
-    const axiosError = err as AxiosError<ApiError>
-    if (axiosError.response?.data) {
-      throw axiosError.response.data
-    }
-    throw { statusCode: 0, message: "Erreur réseau", code: "NETWORK_ERROR" } satisfies ApiError
+    throw ErrorHandler.createApiError(err);
   }
 }
 
@@ -132,14 +131,14 @@ import type {
   ExtendGuestTokenResult,
   ChatSession,
   ChatMessage,
-} from "@/types"
+} from "@/types";
 
 export const chat = {
   getSessions: (): Promise<ChatSession[]> =>
     apiClient.get<ChatSession[]>(ENDPOINTS.chat.sessions).then((r) => r.data),
   getSessionLogs: (id: string): Promise<ChatMessage[]> =>
     apiClient.get<ChatMessage[]>(ENDPOINTS.chat.sessionLogs(id)).then((r) => r.data),
-}
+};
 
 export const admin = {
   // Dashboard
@@ -148,19 +147,19 @@ export const admin = {
 
   // Documents
   listDocuments: (): Promise<AdminDocument[]> =>
-    apiClient.get<AdminDocument[]>(ENDPOINTS.admin.documents).then((r) =>
-      Array.isArray(r.data) ? r.data : []
-    ),
+    apiClient
+      .get<AdminDocument[]>(ENDPOINTS.admin.documents)
+      .then((r) => (Array.isArray(r.data) ? r.data : [])),
 
   importDocument: (data: {
-    title: string
-    confidentiality: string
-    file: File
+    title: string;
+    confidentiality: string;
+    file: File;
   }): Promise<AdminDocument> => {
-    const formData = new FormData()
-    formData.append("title", data.title)
-    formData.append("confidentiality", data.confidentiality)
-    formData.append("file", data.file)
+    const formData = new FormData();
+    formData.append("title", data.title);
+    formData.append("confidentiality", data.confidentiality);
+    formData.append("file", data.file);
 
     return apiClient
       .post<AdminDocument>(ENDPOINTS.admin.documents, formData, {
@@ -168,14 +167,16 @@ export const admin = {
           "Content-Type": "multipart/form-data",
         },
       })
-      .then((r) => r.data)
+      .then((r) => r.data);
   },
 
   indexDocument: (id: string) =>
     apiClient
-      .post<{ status: string; documentId: string; startedAt: string }>(
-        ENDPOINTS.admin.documentsByIdIndex(id)
-      )
+      .post<{
+        status: string;
+        documentId: string;
+        startedAt: string;
+      }>(ENDPOINTS.admin.documentsByIdIndex(id))
       .then((r) => r.data),
 
   disableDocument: (id: string): Promise<AdminDocument> =>
@@ -187,10 +188,14 @@ export const admin = {
       .then((r) => r.data),
 
   deleteDocument: (id: string): Promise<{ deleted: boolean }> =>
-    apiClient.delete<{ deleted: boolean }>(ENDPOINTS.admin.documentsByIdDelete(id)).then((r) => r.data),
+    apiClient
+      .delete<{ deleted: boolean }>(ENDPOINTS.admin.documentsByIdDelete(id))
+      .then((r) => r.data),
 
   reindexAll: (): Promise<{ status: string }> =>
-    apiClient.post<{ status: string }>(ENDPOINTS.admin.reindex, { confirm: true }).then((r) => r.data),
+    apiClient
+      .post<{ status: string }>(ENDPOINTS.admin.reindex, { confirm: true })
+      .then((r) => r.data),
 
   // Feedbacks
   listFeedbacks: (
@@ -208,13 +213,13 @@ export const admin = {
 
   // Logs
   listLogs: (filters: {
-    from?: string
-    to?: string
-    role?: string
-    flagged?: boolean
-    ignorance?: boolean
-    page?: number
-    limit?: number
+    from?: string;
+    to?: string;
+    role?: string;
+    flagged?: boolean;
+    ignorance?: boolean;
+    page?: number;
+    limit?: number;
   }): Promise<AdminQueryLog[]> =>
     apiClient
       .get<AdminQueryLog[]>(ENDPOINTS.admin.logs, { params: filters })
@@ -224,10 +229,7 @@ export const admin = {
     apiClient.get<AdminQueryLog[]>(ENDPOINTS.admin.sessionLogs(id)).then((r) => r.data),
 
   // Guests
-  listGuests: (
-    active?: boolean,
-    page?: number
-  ): Promise<{ tokens: GuestToken[]; total: number }> =>
+  listGuests: (active?: boolean, page?: number): Promise<{ tokens: GuestToken[]; total: number }> =>
     apiClient
       .get<{ tokens: GuestToken[]; total: number }>(ENDPOINTS.admin.guests, {
         params: {
@@ -238,10 +240,10 @@ export const admin = {
       .then((r) => r.data),
 
   createGuest: (data: {
-    firstName: string
-    lastName: string
-    email: string
-    expiresAt: string
+    firstName: string;
+    lastName: string;
+    email: string;
+    expiresAt: string;
   }): Promise<CreateGuestTokenResult> =>
     apiClient.post<CreateGuestTokenResult>(ENDPOINTS.admin.guests, data).then((r) => r.data),
 
@@ -252,6 +254,6 @@ export const admin = {
 
   revokeGuest: (id: string): Promise<{ deleted: boolean }> =>
     apiClient.delete<{ deleted: boolean }>(ENDPOINTS.admin.revokeGuest(id)).then((r) => r.data),
-}
+};
 
-export default apiClient
+export default apiClient;

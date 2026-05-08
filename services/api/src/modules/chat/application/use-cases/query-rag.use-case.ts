@@ -16,6 +16,10 @@ import {
   type DocumentChunk,
   type VectorSearchService,
 } from '#chat/domain/services/vector-search.service';
+import {
+  DOCUMENT_REPOSITORY,
+  type DocumentRepository,
+} from '#admin/domain/repositories/document.repository';
 import { ConfigService } from '@nestjs/config';
 import { Inject, Injectable } from '@nestjs/common';
 import { ChatSessionEntity } from 'src/core/domain/entities/chat-session.entity';
@@ -58,6 +62,8 @@ export class QueryRagUseCase {
     private readonly _queryLogRepository: QueryLogRepository,
     @Inject(CHAT_SESSION_REPOSITORY)
     private readonly _chatSessionRepository: ChatSessionRepository,
+    @Inject(DOCUMENT_REPOSITORY)
+    private readonly _documentRepository: DocumentRepository,
     private readonly _configService: ConfigService,
   ) {}
 
@@ -168,6 +174,30 @@ export class QueryRagUseCase {
 
     const responseTimeMs = Date.now() - start;
 
+    // Validate that document exists before using it as foreign key
+    let sourceDocId: string | null = null;
+    let sourceDocName: string | null = null;
+    let sourceDriveUrl: string | null = null;
+
+    if (sourceChunk?.documentId) {
+      try {
+        // Verify document exists in database
+        const document = await this._documentRepository.findById(
+          sourceChunk.documentId,
+        );
+        if (document) {
+          sourceDocId = sourceChunk.documentId;
+          sourceDocName = sourceChunk.title;
+          sourceDriveUrl = sourceChunk.driveUrl;
+        }
+      } catch (error) {
+        // Document doesn't exist, don't set foreign key
+        console.warn(
+          `Document ${sourceChunk.documentId} not found, skipping foreign key reference`,
+        );
+      }
+    }
+
     const queryLog = QueryLogEntity.create(
       userIdHash,
       dto.question,
@@ -176,9 +206,9 @@ export class QueryRagUseCase {
       isGuest,
       isIgnorance,
       chatSessionId,
-      sourceChunk?.documentId ?? null,
-      sourceChunk?.title ?? null,
-      sourceChunk?.driveUrl ?? null,
+      sourceDocId,
+      sourceDocName,
+      sourceDriveUrl,
       responseTimeMs,
     );
 
