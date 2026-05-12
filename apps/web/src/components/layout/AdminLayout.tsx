@@ -4,7 +4,7 @@ import { Activity, ArrowLeft, FileText, LayoutDashboard, LogOut, Menu, MessageSq
 import type { ReactNode } from "react"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { useAuth } from "@/hooks/useAuth.ts"
+import { useAuth } from "@/hooks/useAuth"
 import { cn } from "@workspace/ui/lib/utils"
 import EjaraLogo from "@/assets/icons/Logo.svg?react"
 import EjaraTextLogo from "@/assets/icons/ejara.svg?react"

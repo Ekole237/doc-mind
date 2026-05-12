@@ -30,7 +30,6 @@ export function useChat(id?: string) {
     queryLogId: "",
   });
 
-  const scrollRef = useRef<HTMLDivElement>(null);
   const lastQuestionRef = useRef<string>("");
 
   const fetchSessions = useCallback(async () => {
@@ -189,7 +188,6 @@ export function useChat(id?: string) {
     rateLimited,
     feedbackModal,
     setFeedbackModal,
-    scrollRef,
     handleSubmit,
     sendMessage,
     retryLastMessage,

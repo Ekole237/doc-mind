@@ -4,7 +4,7 @@ import { Button } from "@workspace/ui/components/button"
 import { DataTable, DataTableColumnHeader } from "@workspace/ui/components/data-table"
 import { CheckCircle } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
-import { admin } from "@/api/client.ts"
+import { admin } from "@/api/client"
 import { AdminLayout } from "../../components/layout/AdminLayout"
 import type { AdminFeedback, ApiError } from "@/types"
 

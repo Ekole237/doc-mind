@@ -11,7 +11,7 @@ import { Input } from "@workspace/ui/components/input"
 import { KeyRound, Loader2, Mail, ShieldCheck, UserCircle } from "lucide-react"
 import { useState } from "react"
 import { updatePassword as apiUpdatePassword } from "../../api/client"
-import { useAuth } from "@/hooks/useAuth.ts"
+import { useAuth } from "@/hooks/useAuth"
 
 interface ProfileDrawerProps {
   isOpen: boolean

@@ -1,6 +1,6 @@
 import { Eye, Users, MessageSquareWarning } from "lucide-react"
 import { useEffect, useState } from "react"
-import { admin } from "@/api/client.ts"
+import { admin } from "@/api/client"
 import { MetricCard } from "../../components/admin/MetricCard"
 import { AdminLayout } from "../../components/layout/AdminLayout"
 import { 

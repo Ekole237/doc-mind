@@ -1,4 +1,4 @@
-import { admin } from "@/api/client.ts"
+import { admin } from "@/api/client"
 import type { AdminQueryLog, ApiError } from "@/types"
 import { Button } from "@workspace/ui/components/button"
 import { Calendar as DateCalendar } from "@workspace/ui/components/calendar"

@@ -5,7 +5,7 @@ import { DataTable, DataTableColumnHeader } from "@workspace/ui/components/data-
 import { Input } from "@workspace/ui/components/input";
 import { Eye, EyeOff, Plus, RefreshCw, Trash2, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
-import { admin } from "@/api/client.ts";
+import { admin } from "@/api/client";
 import { AdminLayout } from "../../components/layout/AdminLayout";
 import type { AdminDocument, ApiError } from "@/types";
 import { Card, CardContent, CardTitle } from "@workspace/ui/components/card";
